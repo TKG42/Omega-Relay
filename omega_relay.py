@@ -9,6 +9,7 @@ from bullet import Bullet
 from alien import Alien
 from explosion import Explosion
 from game_stats import GameStats
+from button import Button
 
 class OmegaRelay:
     """Overall class to manage game assets and behavior."""
@@ -38,6 +39,9 @@ class OmegaRelay:
 
         # Instance for storing game stats.
         self.stats = GameStats(self)
+
+        # Make the start game button
+        # TODO: instantiate the button here
 
         # Active state for state machine.
         self.state = "playing"
@@ -81,6 +85,10 @@ class OmegaRelay:
         self._game_over_message()
         # TODO: implement a timer or an input listener to switch to a menu or restart.
 
+    def main_menu_state(self):
+        """Display the start game button, score data and other options."""
+        # TODO: add code for main menu
+
     def _check_events(self):
         """Respond to keypresses and mouse events."""
         for event in pygame.event.get():
@@ -90,6 +98,8 @@ class OmegaRelay:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+
+        # TODO Add mousebutton down event for checking start game button
 
     def _check_keydown_events(self, event):
         """Respond to keypresses."""
@@ -102,12 +112,18 @@ class OmegaRelay:
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
 
+        # TODO add mousebutton down event (for button)
+
     def _check_keyup_events(self, event):
         """Respond to key releases."""
         if event.key == pygame.K_UP:
             self.ship.moving_up = False
         elif event.key == pygame.K_DOWN:
             self.ship.moving_down = False
+
+    def _check_play_button(self, mouse_pos):
+        """Start a new game when the player clicks the main game button."""
+        # TODO: add logic
 
     def _create_star(self, star_number):
         """Create a star and place it in the column."""
@@ -287,6 +303,8 @@ class OmegaRelay:
             self._flash_danger_message()
         elif self.state == "game_over":
             self._game_over_message()
+
+        # TODO: Add code for button, within the condition of the main menu state
 
         pygame.display.flip()
 
