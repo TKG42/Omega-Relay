@@ -15,9 +15,6 @@ class Bullet(Sprite):
         self.image = pygame.image.load('images/biggblast50x20.png')
         self.rect = self.image.get_rect()
 
-        # NOTE: original rect bullet 
-        # self.rect = pygame.Rect(0, 0, self.settings.bullet_width,
-        #     self.settings.bullet_height)
         self.rect.midright = or_game.ship.rect.midright
 
         # Store the bullet's position as a decimal value.

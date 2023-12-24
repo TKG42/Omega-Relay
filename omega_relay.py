@@ -109,7 +109,7 @@ class OmegaRelay:
         elif event.key == pygame.K_DOWN:
             self.ship.moving_down = False
 
-    def _create_star(self, star_number, column_number):
+    def _create_star(self, star_number):
         """Create a star and place it in the column."""
         star = Star(self)
         star_width, star_height = star.rect.size
@@ -122,9 +122,6 @@ class OmegaRelay:
 
     def _starflight(self):
         """Cause all stars to rush from the right side of the screen to the left."""
-        # for star in self.stars.sprites():
-        #     star.rect.y += self.settings.star_move_speed
-        # NOTE: Original code above, Jimothy edit below. Updates the x position of stars.
         for star in self.stars.sprites():
             star.rect.x -= self.settings.star_move_speed
 
@@ -250,15 +247,11 @@ class OmegaRelay:
         for alien in self.aliens.sprites():
             alien.rect.x -= alien.speed
 
-    def _create_alien(self, alien_number, column_number):
+    def _create_alien(self, alien_number):
         """Create an alien and place it in the column."""
         alien = Alien(self)
         alien_width, alien_height = alien.rect.size
         alien.x = alien_width + 2 * alien_width * alien_number
-
-        # Code for a grid instead of random positions below.
-        # alien.rect.x = alien.x
-        # alien.rect.y = alien.rect.height + 2 * alien.rect.height * column_number
 
         alien.rect.x = randint(alien_width, 1792 - 2 * alien_width)
         alien.rect.y = randint(alien_width, 1024 - 2 * alien_height)
