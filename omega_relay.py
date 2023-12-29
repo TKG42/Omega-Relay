@@ -1,6 +1,5 @@
 import sys 
 import pygame
-from pygame.sprite import Sprite 
 from random import randint
 from settings import Settings
 from star import Star
@@ -41,11 +40,14 @@ class OmegaRelay:
         self.stats = GameStats(self)
 
         # Make the start game button
-        # TODO: instantiate the button here
+        self.start_game_button = Button(self, "Engage", 0)
 
         # Active state for state machine.
         self.state = "playing"
         self.danger_start_time = None
+
+        # Initialize timer
+        self.game_over_start = None # Start with None to indicate no timer is running
 
     def run_game(self):
         """Start the main loop for the game."""
@@ -57,9 +59,11 @@ class OmegaRelay:
                 self.danger_state()
             elif self.state == "game_over":
                 self.game_over_state()
+            elif self.state == "main_menu":
+                self.main_menu_state()
             self._update_screen()
 
-    def playing_state(self):
+    def playing_state(self): 
         """Handle all playing logic, updating the ship, stars, bullets, etc."""
         self.ship.update()
         self._update_starshower()
@@ -72,22 +76,43 @@ class OmegaRelay:
         current_time = pygame.time.get_ticks()
         if current_time - self.danger_start_time > 2000:  # 2 seconds passed
             self.state = "playing"
+        self.ship.blitme() # Make sure the ship is drawn
         # Continue updating the game elements while in danger state
         self.playing_state()
         
     def game_over_state(self):
         """ Display the game over message and stop updating the ship"""
          # Stop player control
-        self.ship.moving_up = False
+        self.ship.moving_up = False 
         self.ship.moving_down = False
         # You can update the background elements here if you want them to continue animating
         self._update_starshower()
         self._game_over_message()
-        # TODO: implement a timer or an input listener to switch to a menu or restart.
 
-    def main_menu_state(self):
+        # Continue with the 5-second wait
+        if self.game_over_start is None: # Initialize timer if not already set. 
+            self.game_over_start = pygame.time.get_ticks()
+
+        # Transition to the main menu after 5 seconds
+        if pygame.time.get_ticks() - self.game_over_start > 5000:
+            self.game_over_start = None # Reset the timer for next game over
+            self.state = "main_menu"
+
+    def main_menu_state(self): 
         """Display the start game button, score data and other options."""
-        # TODO: add code for main menu
+        # Ensure all game elements are reset for a clean state
+        self.reset_game()
+        self.stars.empty() # Optionally clear the stars or handle them differently for the main menu.
+
+        # Draw the main menu
+        if isinstance(self.settings.background, tuple): # For a color background
+            self.screen.fill(self.settings.background)
+        else:                                           # For a background image
+            self.screen.blit((self.settings.background), (0, 0))
+        self.start_game_button.draw_button()
+
+        # Update the screen
+        pygame.display.flip()
 
     def _check_events(self):
         """Respond to keypresses and mouse events."""
@@ -98,8 +123,13 @@ class OmegaRelay:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
-
-        # TODO Add mousebutton down event for checking start game button
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self._check_mouse_button_down(event)
+                # Handle immediate transition from game over to main menu
+                if self.state == "game_over":
+                    self.game_over_start = None # Reset timer
+                    self.state = "main_menu"
+                    return # Skip further processing
 
     def _check_keydown_events(self, event):
         """Respond to keypresses."""
@@ -112,8 +142,6 @@ class OmegaRelay:
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
 
-        # TODO add mousebutton down event (for button)
-
     def _check_keyup_events(self, event):
         """Respond to key releases."""
         if event.key == pygame.K_UP:
@@ -121,9 +149,23 @@ class OmegaRelay:
         elif event.key == pygame.K_DOWN:
             self.ship.moving_down = False
 
-    def _check_play_button(self, mouse_pos):
-        """Start a new game when the player clicks the main game button."""
-        # TODO: add logic
+    def reset_game(self):
+        """Reset all game dynamics and stats for a new game."""
+        self.stats.reset_stats()
+        self.ship = Ship(self)
+        self.bullets.empty()
+        self.aliens.empty()
+        self.explosions.empty()
+        # Add any other necessary resets here (e.g., resetting scores, lives)
+
+    def _check_mouse_button_down(self, event):
+        """Handle mouse button down events for the entire game."""
+        mouse_x, mouse_y = event.pos 
+        if self.state == "main_menu":
+            if self.start_game_button.rect.collidepoint(mouse_x, mouse_y):
+                # Reset necessary game elements here before switching to playing state.
+                self.reset_game()
+                self.state = "playing"
 
     def _create_star(self, star_number):
         """Create a star and place it in the column."""
@@ -292,10 +334,13 @@ class OmegaRelay:
         self.screen.blit(self.settings.background, (0, 0))
         self.stars.draw(self.screen)
         self.aliens.draw(self.screen)
-        if self.state != "game_over":
-            self.ship.blitme()
+
+        if self.state == "playing" or self.state == "danger":
+            self.ship.blitme() # Draw the ship in both playing and danger states
+
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+
         self.explosions.update()
         self.explosions.draw(self.screen)
 
@@ -304,7 +349,8 @@ class OmegaRelay:
         elif self.state == "game_over":
             self._game_over_message()
 
-        # TODO: Add code for button, within the condition of the main menu state
+        if self.state == "main_menu":
+            self.start_game_button.draw_button() # Ensure button is drawn only in main menu state
 
         pygame.display.flip()
 
