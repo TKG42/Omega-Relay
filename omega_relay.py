@@ -9,6 +9,10 @@ from alien import Alien
 from explosion import Explosion
 from game_stats import GameStats
 from button import Button
+from scoreboard import Scoreboard
+
+# NOTE: Next feature to implement: Player powerups
+
 
 class OmegaRelay:
     """Overall class to manage game assets and behavior."""
@@ -38,6 +42,7 @@ class OmegaRelay:
 
         # Instance for storing game stats.
         self.stats = GameStats(self)
+        self.sb = Scoreboard(self)
 
         # Make the start game button
         self.start_game_button = Button(self, "Engage", 0)
@@ -337,6 +342,8 @@ class OmegaRelay:
 
         if self.state == "playing" or self.state == "danger":
             self.ship.blitme() # Draw the ship in both playing and danger states
+            self.sb.prep_lives()
+            self.sb.show_lives()
 
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()

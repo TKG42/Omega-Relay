@@ -15,8 +15,10 @@ class Alien(Sprite):
         self.image = pygame.image.load('images/Hostile1_armed175x175.png')
         self.rect = self.image.get_rect()
 
+        top_limit = 50 # Margin space at the top
+
         self.rect.x = or_game.settings.screen_width
-        self.rect.y = randint(0, or_game.settings.screen_height - self.rect.height)
+        self.rect.y = randint(top_limit, or_game.settings.screen_height - self.rect.height) # Top limit instead of zero
 
         # Store the alien's exact horizontal position.
         self.x = float(self.rect.x)

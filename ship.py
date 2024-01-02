@@ -28,10 +28,12 @@ class Ship:
 
     def update(self):
         """Update the ship's position based on the movement flag."""
+        top_limit = 50 # Margin space at the top
+
         # Update the ship's y value
         if self.moving_down and self.rect.bottom < self.screen_rect.bottom:
             self.y += self.settings.ship_speed
-        if self.moving_up and self.rect.top > 0:
+        if self.moving_up and self.rect.top > top_limit: # Top limit instead of 0
             self.y -= self.settings.ship_speed
 
         # Update rect object from self.y
