@@ -10,9 +10,12 @@ from explosion import Explosion
 from game_stats import GameStats
 from button import Button
 from scoreboard import Scoreboard
+from phase_manager import PhaseManager
 
 # NOTE: Next feature to implement: Player powerups
 
+# NOTE XXX NOTE XXX FIXME FIXME FIXME # This version of Omega Relay has a state change bug (danger / phase change overlap fail)
+# Game is in a working state save for the bug above. This version will preclude a major refactor to the games state management. 
 
 class OmegaRelay:
     """Overall class to manage game assets and behavior."""
@@ -40,28 +43,37 @@ class OmegaRelay:
         self.aliens = pygame.sprite.Group()
         self.explosions = pygame.sprite.Group()
 
+        # Initialize Phase Manager
+        self.phase_manager = PhaseManager(self)
+
         # Instance for storing game stats.
         self.stats = GameStats(self)
         self.sb = Scoreboard(self)
 
         # Make the start game button
-        self.start_game_button = Button(self, "Engage", 0)
+        self.start_game_button = Button(self, "ENGAGE", 0)
 
         # Active state for state machine.
-        self.state = "playing"
+        self.reset_game()
+        self.state = "main_menu"
         self.danger_start_time = None
 
         # Initialize timer
         self.game_over_start = None # Start with None to indicate no timer is running
+        
+        self.aliens_defeated_in_phase = 0 # Initialize the counter for shot down aliens
 
     def run_game(self):
         """Start the main loop for the game."""
         while True:
             self._check_events()
+            self.phase_manager.update()
             if self.state == "playing":
                 self.playing_state()
             elif self.state == "danger": 
                 self.danger_state()
+            elif self.state == "phase_change":
+                self.handle_phase_change()
             elif self.state == "game_over":
                 self.game_over_state()
             elif self.state == "main_menu":
@@ -119,6 +131,37 @@ class OmegaRelay:
         # Update the screen
         pygame.display.flip()
 
+    def handle_phase_change(self):
+        """Handle the game during a phase change."""
+        # Continue to allow ship control and star rush
+        self.ship.update()
+        self._update_starshower()
+
+        # Clear out old aliens and bullets to prepare for new phase
+        self.aliens.empty()
+        self.bullets.empty()
+
+        # Draw phase level message
+        self.sb.show_phase_level(self.phase_manager.current_phase)
+        self.sb.draw_phase_level()
+
+        # Initiate a delay or countdown before the next phase starts
+        if not hasattr(self, "phase_change_start") or self.phase_change_start is None:
+            self.phase_change_start = pygame.time.get_ticks()
+
+        # After a set time, end phase change and start the new phase
+        if pygame.time.get_ticks() - self.phase_change_start > 3500: # 3.5 seconds
+            self.phase_change_start = None
+
+            # Apply new phase settings and spawn new aliens
+            self.phase_manager.apply_phase_config() 
+            self.state = "playing" # Change back to playing state to resume game
+            self._create_new_column_of_aliens() # Spawn new aliens for the new phase
+            
+            # Reset phase-related counters in phase manager for the new phase
+            self.phase_manager.aliens_spawned_this_phase = 0
+            self.phase_manager.aliens_defeated_in_phase = 0
+
     def _check_events(self):
         """Respond to keypresses and mouse events."""
         for event in pygame.event.get():
@@ -156,11 +199,14 @@ class OmegaRelay:
 
     def reset_game(self):
         """Reset all game dynamics and stats for a new game."""
-        self.stats.reset_stats()
-        self.ship = Ship(self)
-        self.bullets.empty()
-        self.aliens.empty()
-        self.explosions.empty()
+        self.stats.reset_stats() # Reset all HUD stats
+        self.ship = Ship(self) # Reinitialize ship
+        self.bullets.empty() # Clear existing bullets
+        self.aliens.empty() # Clear existing aliens
+        self.explosions.empty() # Clear existing explosions
+        self.aliens_defeated_in_phase = 0 # Reset defeated alien count
+        self.phase_manager.current_phase = 1 # Reset to phase 1
+        self.phase_manager.apply_phase_config() # Apply initial phase config
         # Add any other necessary resets here (e.g., resetting scores, lives)
 
     def _check_mouse_button_down(self, event):
@@ -241,7 +287,10 @@ class OmegaRelay:
                     explosion = Explosion(self.screen, alien.rect.center, "alien")
                     self.explosions.add(explosion)
                     self.aliens.remove(alien)
-
+                    self.handle_alien_defeat()
+                    # NOTE debugging
+                    print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
+          
         if not self.aliens:
             # Destroy existing bullets
             self.bullets.empty()
@@ -267,6 +316,7 @@ class OmegaRelay:
             # Threshold for checking if an alien has passed
             if alien.rect.right < self.settings.screen_width * 0.02: # 2% of screen width
                 self.aliens.remove(alien)
+                self.aliens_defeated_in_phase += 1
                 self.stats.lives_left -= 1
                 if self.stats.lives_left <= 0:
                     self.state = "game_over"
@@ -275,6 +325,12 @@ class OmegaRelay:
                     self.state = "danger"
                     self.danger_start_time = pygame.time.get_ticks()
                     break  # Only trigger once per frame
+
+    def handle_alien_defeat(self):
+        """Handle what happens when an alien is defeated."""
+        # Increment the counter for defeated aliens
+        self.aliens_defeated_in_phase += 1
+        # ... any additional logic for defeating an alien...
 
     def _update_aliens(self):
         """Update the position of all aliens."""
@@ -298,12 +354,17 @@ class OmegaRelay:
 
     def _create_new_column_of_aliens(self):
         """Create a new column of aliens at the right side of the screen."""
-        for _ in range(3): # Change the range to add more aliens
-            alien = Alien(self)
-            # Start the new alien at a random y position on the right side of the screen.
-            alien.rect.y = randint(0, self.settings.screen_height - alien.rect.height)
-            alien.rect.x = self.settings.screen_width
-            self.aliens.add(alien)
+        # Check if the limit of aliens for the current phase has been reached
+        # NOTE Debugging
+        print(f'Aliens spawned this phase: {self.phase_manager.aliens_spawned_this_phase}')
+        if self.phase_manager.aliens_spawned_this_phase < self.phase_manager.phase_configs[self.phase_manager.current_phase - 1]["spawn_rate"]:
+            for _ in range(3): # Change the range to add more aliens
+                alien = Alien(self)
+                # Start the new alien at a random y position on the right side of the screen.
+                alien.rect.y = randint(0, self.settings.screen_height - alien.rect.height)
+                alien.rect.x = self.settings.screen_width
+                self.aliens.add(alien)
+                self.phase_manager.aliens_spawned_this_phase += 1 # Increment the counter
 
     def _alien_rush(self):
         """Cause all Aliens to rush from the right side of the screen to the left."""
@@ -358,6 +419,13 @@ class OmegaRelay:
 
         if self.state == "main_menu":
             self.start_game_button.draw_button() # Ensure button is drawn only in main menu state
+
+        if self.state == "phase_change":
+            self.sb.draw_phase_level()
+
+        if self.state in ["playing", "danger", "phase_change"]:
+            self.sb.show_lives()
+            self.ship.blitme()
 
         pygame.display.flip()
 

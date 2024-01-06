@@ -27,5 +27,5 @@ class Settings:
         self.bullet_color = (0, 245, 0)
         self.bullets_allowed = 5
 
-        # # Alien settings
-        # self.alien_speed = 1.0
+        # Alien settings
+        self.alien_speed_range = (1, 10) # Default speed. See Phase config for expected speeds per level. 

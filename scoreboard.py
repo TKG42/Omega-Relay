@@ -15,6 +15,23 @@ class Scoreboard:
         self.life_rect = self.life_image.get_rect()
         self.lives = []
 
+        # Adjust size as needed
+        self.phase_level_font = pygame.font.SysFont(None, 92)
+        self.phase_level_image = None
+        self.phase_level_rect = None
+
+    def show_phase_level(self, phase):
+        """Display the phase level on-screen."""
+        phase_str = f"PHASE {phase}"
+        self.phase_level_image = self.phase_level_font.render(phase_str, True, (255, 255, 255))
+        self.phase_level_rect = self.phase_level_image.get_rect()
+        self.phase_level_rect.center = self.screen_rect.center
+
+    def draw_phase_level(self):
+        """Draw the phase level to the screen."""
+        if hasattr(self, 'phase_level_image') and self.phase_level_image: # Check for initialization
+            self.screen.blit(self.phase_level_image, self.phase_level_rect)
+
     def prep_lives(self):
         """Show how many lives are left."""
         self.lives = []
