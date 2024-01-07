@@ -2,6 +2,7 @@ import sys
 import pygame
 from random import randint
 from settings import Settings
+from game_state import GameState
 from star import Star
 from ship import Ship
 from bullet import Bullet
@@ -15,7 +16,7 @@ from phase_manager import PhaseManager
 # NOTE: Next feature to implement: Player powerups
 
 # NOTE XXX NOTE XXX FIXME FIXME FIXME # This version of Omega Relay has a state change bug (danger / phase change overlap fail)
-# Game is in a working state save for the bug above. This version will preclude a major refactor to the games state management. 
+# Game is in a working state save for the bug above. This version is post a major refactor to the games state management. 
 
 class OmegaRelay:
     """Overall class to manage game assets and behavior."""
@@ -55,7 +56,8 @@ class OmegaRelay:
 
         # Active state for state machine.
         self.reset_game()
-        self.state = "main_menu"
+        self.state = GameState.MAIN_MENU
+        self.next_state = None
         self.danger_start_time = None
 
         # Initialize timer
@@ -67,18 +69,43 @@ class OmegaRelay:
         """Start the main loop for the game."""
         while True:
             self._check_events()
-            self.phase_manager.update()
-            if self.state == "playing":
-                self.playing_state()
-            elif self.state == "danger": 
-                self.danger_state()
-            elif self.state == "phase_change":
-                self.handle_phase_change()
-            elif self.state == "game_over":
-                self.game_over_state()
-            elif self.state == "main_menu":
-                self.main_menu_state()
+            self._update_game_state() # Centralized state updating
+            self._execute_current_state()
             self._update_screen()
+
+    def _update_game_state(self):
+        """Centralized game state management."""
+        # ISABEL: Stay in main menu state if already in main menu
+        if self.state == GameState.MAIN_MENU:
+            self.next_state = GameState.MAIN_MENU
+        # Check for phase change next
+        elif self.phase_manager.should_change_phase():
+            self.next_state = GameState.PHASE_CHANGE
+        elif self.state == GameState.PLAYING and self._is_in_danger():
+            self.next_state = GameState.DANGER
+        # Check if danger should persist or revert to playing state
+        elif self.state == GameState.DANGER and not self._is_in_danger():
+            self.next_state = GameState.PLAYING
+        elif self.state not in [GameState.PHASE_CHANGE, GameState.DANGER, GameState.GAME_OVER]:
+            self.next_state = GameState.PLAYING
+
+        # Handle transitions
+        if self.next_state:
+            self.state = self.next_state
+            self.next_state = None
+
+    def _execute_current_state(self):
+        """Execute behavior based on the current state."""
+        if self.state == GameState.PLAYING:
+            self.playing_state()
+        elif self.state == GameState.DANGER:
+            self.danger_state()
+        elif self.state == GameState.PHASE_CHANGE:
+            self.handle_phase_change()
+        elif self.state == GameState.MAIN_MENU:
+            self.main_menu_state()
+        elif self.state == GameState.GAME_OVER:
+            self.game_over_state()
 
     def playing_state(self): 
         """Handle all playing logic, updating the ship, stars, bullets, etc."""
@@ -92,10 +119,27 @@ class OmegaRelay:
         """ Display the danger message and return to playing state after a brief period."""
         current_time = pygame.time.get_ticks()
         if current_time - self.danger_start_time > 2000:  # 2 seconds passed
-            self.state = "playing"
-        self.ship.blitme() # Make sure the ship is drawn
+            if self.phase_manager.should_change_phase():
+                self.next_state = GameState.PHASE_CHANGE
+            else:
+                self.next_state = GameState.PLAYING
         # Continue updating the game elements while in danger state
+        self.ship.blitme() # Make sure the ship is drawn
         self.playing_state()
+
+    def _is_in_danger(self):
+        """Determine if the game is in the danger state."""
+        # ISABEL: Stay in danger state for at least 2 seconds ago
+        if self.state == GameState.DANGER and pygame.time.get_ticks() - self.danger_start_time < 2000:
+            return True
+        # similar to _check_alien_leftscreen
+        for alien in self.aliens.sprites():
+            if alien.rect.right < self.settings.screen_width * 0.02:
+                self.aliens_defeated_in_phase += 1
+                # NOTE debugging
+                print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
+                return True
+            return False
         
     def game_over_state(self):
         """ Display the game over message and stop updating the ship"""
@@ -113,7 +157,8 @@ class OmegaRelay:
         # Transition to the main menu after 5 seconds
         if pygame.time.get_ticks() - self.game_over_start > 5000:
             self.game_over_start = None # Reset the timer for next game over
-            self.state = "main_menu"
+            self.state = GameState.MAIN_MENU
+            self._execute_current_state()
 
     def main_menu_state(self): 
         """Display the start game button, score data and other options."""
@@ -155,7 +200,7 @@ class OmegaRelay:
 
             # Apply new phase settings and spawn new aliens
             self.phase_manager.apply_phase_config() 
-            self.state = "playing" # Change back to playing state to resume game
+            self.state = GameState.PLAYING # Change back to playing state to resume game
             self._create_new_column_of_aliens() # Spawn new aliens for the new phase
             
             # Reset phase-related counters in phase manager for the new phase
@@ -174,9 +219,10 @@ class OmegaRelay:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self._check_mouse_button_down(event)
                 # Handle immediate transition from game over to main menu
-                if self.state == "game_over":
+                if self.state == GameState.GAME_OVER:
                     self.game_over_start = None # Reset timer
-                    self.state = "main_menu"
+                    self.state = GameState.MAIN_MENU
+                    self._execute_current_state()
                     return # Skip further processing
 
     def _check_keydown_events(self, event):
@@ -205,6 +251,7 @@ class OmegaRelay:
         self.aliens.empty() # Clear existing aliens
         self.explosions.empty() # Clear existing explosions
         self.aliens_defeated_in_phase = 0 # Reset defeated alien count
+        self.phase_manager.aliens_spawned_this_phase = 0 # ISABEL: Reset the spawned alien count
         self.phase_manager.current_phase = 1 # Reset to phase 1
         self.phase_manager.apply_phase_config() # Apply initial phase config
         # Add any other necessary resets here (e.g., resetting scores, lives)
@@ -212,11 +259,11 @@ class OmegaRelay:
     def _check_mouse_button_down(self, event):
         """Handle mouse button down events for the entire game."""
         mouse_x, mouse_y = event.pos 
-        if self.state == "main_menu":
+        if self.state == GameState.MAIN_MENU:
             if self.start_game_button.rect.collidepoint(mouse_x, mouse_y):
                 # Reset necessary game elements here before switching to playing state.
                 self.reset_game()
-                self.state = "playing"
+                self.state = GameState.PLAYING
 
     def _create_star(self, star_number):
         """Create a star and place it in the column."""
@@ -303,10 +350,11 @@ class OmegaRelay:
         explosion = Explosion(self.screen, self.ship.rect.center, "player")
         self.explosions.add(explosion)
         # Set state to game over
-        self.state = "game_over"
+        self.state = GameState.GAME_OVER
+        self._execute_current_state()
         # Destroy existing bullets and aliens
         self.bullets.empty()
-        self.aliens.empty() 
+        self.aliens.empty()
         # Update the screen immediately to show the explosion
         self._update_screen()
 
@@ -317,12 +365,15 @@ class OmegaRelay:
             if alien.rect.right < self.settings.screen_width * 0.02: # 2% of screen width
                 self.aliens.remove(alien)
                 self.aliens_defeated_in_phase += 1
+                # NOTE debugging
+                print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
                 self.stats.lives_left -= 1
                 if self.stats.lives_left <= 0:
-                    self.state = "game_over"
+                    self.state = GameState.GAME_OVER
+                    self._execute_current_state()
                     break  # Exit the loop as we're going to game over
-                elif self.state == "playing":  # Only set to danger if we're currently playing
-                    self.state = "danger"
+                elif self.state == GameState.PLAYING:  # Only set to danger if we're currently playing
+                    self.state = GameState.DANGER
                     self.danger_start_time = pygame.time.get_ticks()
                     break  # Only trigger once per frame
 
@@ -330,6 +381,11 @@ class OmegaRelay:
         """Handle what happens when an alien is defeated."""
         # Increment the counter for defeated aliens
         self.aliens_defeated_in_phase += 1
+        # NOTE debugging
+        print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
+        # Go to the next phase if plater has defeated all the aliens
+        if self.state == GameState.PLAYING and self.aliens_defeated_in_phase >= self.phase_manager.phase_configs[self.phase_manager.current_phase - 1]["spawn_rate"]:
+            self.phase_manager.next_phase()
         # ... any additional logic for defeating an alien...
 
     def _update_aliens(self):
@@ -401,7 +457,7 @@ class OmegaRelay:
         self.stars.draw(self.screen)
         self.aliens.draw(self.screen)
 
-        if self.state == "playing" or self.state == "danger":
+        if self.state == GameState.PLAYING or self.state == GameState.DANGER:
             self.ship.blitme() # Draw the ship in both playing and danger states
             self.sb.prep_lives()
             self.sb.show_lives()
@@ -412,18 +468,18 @@ class OmegaRelay:
         self.explosions.update()
         self.explosions.draw(self.screen)
 
-        if self.state == "danger":
+        if self.state == GameState.DANGER:
             self._flash_danger_message()
-        elif self.state == "game_over":
+        elif self.state == GameState.GAME_OVER:
             self._game_over_message()
 
-        if self.state == "main_menu":
+        if self.state == GameState.MAIN_MENU:
             self.start_game_button.draw_button() # Ensure button is drawn only in main menu state
 
-        if self.state == "phase_change":
+        if self.state == GameState.PHASE_CHANGE:
             self.sb.draw_phase_level()
 
-        if self.state in ["playing", "danger", "phase_change"]:
+        if self.state in [GameState.PLAYING, GameState.DANGER, GameState.PHASE_CHANGE]:
             self.sb.show_lives()
             self.ship.blitme()
 

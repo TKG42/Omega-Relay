@@ -1,3 +1,5 @@
+from game_state import GameState
+
 class PhaseManager:
     def __init__(self, or_game):
         """Manages phases/levels of the game"""
@@ -19,7 +21,7 @@ class PhaseManager:
 
     def initiate_phase_change(self):
         """Initiate the phase change state."""
-        self.game.state = "phase_change"
+        self.game.state = GameState.PHASE_CHANGE
         self.game.sb.show_phase_level(self.current_phase)
         # ... any other setup for phase change
 
@@ -27,16 +29,25 @@ class PhaseManager:
         """Transition to the next phase if there are remaining phases."""
         if self.current_phase < self.total_phases:
             self.current_phase += 1
-            self.game.state = "phase_change"
+            self.game.state = GameState.PHASE_CHANGE
             self.apply_phase_config()
             # Display new phase level in the center of the screen (HUD update)
             self.game.sb.show_phase_level(self.current_phase)
             # Reset the counter for the new phase
-            self.aliens_spawned_this_phase = 0
-            self.aliens_defeated_in_phase = 0
+            self.reset_phase_counters()        
 
-            # NOTE: debugging
-            print(f"Transitioning to Phase {self.current_phase}")
+    def reset_phase_counters(self):
+        """Reset the counters for aliens spawned and defeated in the current phase."""
+        self.aliens_spawned_this_phase = 0
+        self.game.aliens_defeated_in_phase = 0
+        # NOTE: debugging
+        print(f"Transitioning to Phase {self.current_phase}")
+
+    def should_change_phase(self):
+        """Determine if a phase change should occur."""
+        current_config = self.phase_configs[self.current_phase - 1]
+        return (self.aliens_spawned_this_phase >= current_config["spawn_rate"] and
+                self.game.aliens_defeated_in_phase >= self.aliens_spawned_this_phase)
 
     def apply_phase_config(self):
         """Apply the configurations for the current phase."""
@@ -53,16 +64,13 @@ class PhaseManager:
         
     def update(self):
         """Update phase-related conditions and check for phase completion."""
-        current_config = self.phase_configs[self.current_phase - 1]
-        # NOTE: debugging
-        # print(f"Phase: {self.current_phase}, Spawned: {self.aliens_spawned_this_phase}, Defeated: {self.aliens_defeated_in_phase}, Spawn Rate: {current_config['spawn_rate']}")
-        if (self.aliens_spawned_this_phase >= current_config["spawn_rate"]
-            and self.game.aliens_defeated_in_phase >= self.aliens_spawned_this_phase):
-            # Transition to the next phase if it exists
+        if self.should_change_phase():
             self.next_phase()
+
             # Reset counters for the next phase
-            self.aliens_spawned_this_phase = 0
-            self.game.aliens_defeated_in_phase = 0
+            # self.aliens_spawned_this_phase = 0
+            # self.game.aliens_defeated_in_phase = 0
+            self.reset_phase_counters()
 
             # NOTE: debugging
             print("Updating PhaseManager...")
