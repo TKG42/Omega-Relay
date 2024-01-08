@@ -13,10 +13,16 @@ from button import Button
 from scoreboard import Scoreboard
 from phase_manager import PhaseManager
 
-# NOTE: Next feature to implement: Player powerups
+# NOTE: Next features to implement: ...
 
-# NOTE XXX NOTE XXX FIXME FIXME FIXME # This version of Omega Relay has a state change bug (danger / phase change overlap fail)
-# Game is in a working state save for the bug above. This version is post a major refactor to the games state management. 
+# Add large enemy type
+# Add Player lives to HUD
+# Add a title to main menu
+# Add a page to main menu that shows player controls
+# Add boss fight
+# Add power ups
+# Add scoreboard
+# Add sound
 
 class OmegaRelay:
     """Overall class to manage game assets and behavior."""
@@ -79,10 +85,15 @@ class OmegaRelay:
         if self.state == GameState.MAIN_MENU:
             self.next_state = GameState.MAIN_MENU
         # Check for phase change next
-        elif self.phase_manager.should_change_phase():
+        # ISABEL: only switch to PHASE_CHANGE state if we are not already in that state
+        elif self.state != GameState.PHASE_CHANGE and self.phase_manager.should_change_phase():
             self.next_state = GameState.PHASE_CHANGE
+            # ISABEL: Once you start the phase change, go to the next phase
+            self.phase_manager.next_phase()
         elif self.state == GameState.PLAYING and self._is_in_danger():
-            self.next_state = GameState.DANGER
+            # If a phase change is pending, don't switch to danger
+            if self.next_state != GameState.PHASE_CHANGE:
+                self.next_state = GameState.DANGER
         # Check if danger should persist or revert to playing state
         elif self.state == GameState.DANGER and not self._is_in_danger():
             self.next_state = GameState.PLAYING
@@ -204,8 +215,7 @@ class OmegaRelay:
             self._create_new_column_of_aliens() # Spawn new aliens for the new phase
             
             # Reset phase-related counters in phase manager for the new phase
-            self.phase_manager.aliens_spawned_this_phase = 0
-            self.phase_manager.aliens_defeated_in_phase = 0
+            self.phase_manager.reset_phase_counters()
 
     def _check_events(self):
         """Respond to keypresses and mouse events."""
