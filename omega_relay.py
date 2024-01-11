@@ -16,7 +16,7 @@ from phase_manager import PhaseManager
 # NOTE: Next features to implement: ...
 
 # Add large enemy type
-# Add Player lives to HUD
+# Add phase number to HUD (NOTE: might not do this)
 # Add a title to main menu
 # Add a page to main menu that shows player controls
 # Add boss fight
@@ -32,11 +32,19 @@ class OmegaRelay:
         pygame.init()
         self.settings = Settings()
 
-        self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
+        self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height), pygame.DOUBLEBUF)
         pygame.display.set_caption("Omega Relay")
 
+        # Load the title image for the main menu
+        self.title_image = pygame.image.load('images/Ace13_t650x650.png')
+        self.title_image_rect = self.title_image.get_rect()
+        # Center the title screen, then move up with y-offset
+        y_difference = 250
+        self.title_image_rect.centerx = self.screen.get_rect().centerx
+        self.title_image_rect.centery = self.screen.get_rect().centery - y_difference
+
         self.ship = Ship(self)
-        
+
         # Add a star every x frames
         self.star_add_interval = 5
         self.frame_counter = 0
@@ -68,7 +76,6 @@ class OmegaRelay:
 
         # Initialize timer
         self.game_over_start = None # Start with None to indicate no timer is running
-        
         self.aliens_defeated_in_phase = 0 # Initialize the counter for shot down aliens
 
     def run_game(self):
@@ -84,7 +91,6 @@ class OmegaRelay:
         # ISABEL: Stay in main menu state if already in main menu
         if self.state == GameState.MAIN_MENU:
             self.next_state = GameState.MAIN_MENU
-        # Check for phase change next
         # ISABEL: only switch to PHASE_CHANGE state if we are not already in that state
         elif self.state != GameState.PHASE_CHANGE and self.phase_manager.should_change_phase():
             self.next_state = GameState.PHASE_CHANGE
@@ -183,6 +189,7 @@ class OmegaRelay:
         else:                                           # For a background image
             self.screen.blit((self.settings.background), (0, 0))
         self.start_game_button.draw_button()
+        self.screen.blit(self.title_image, self.title_image_rect)
 
         # Update the screen
         pygame.display.flip()
@@ -484,6 +491,7 @@ class OmegaRelay:
             self._game_over_message()
 
         if self.state == GameState.MAIN_MENU:
+            self.screen.blit(self.title_image, self.title_image_rect)
             self.start_game_button.draw_button() # Ensure button is drawn only in main menu state
 
         if self.state == GameState.PHASE_CHANGE:
