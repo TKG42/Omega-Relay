@@ -64,6 +64,9 @@ class PhaseManager:
         # Apply additional phase-sepcific changes as needed
         if "enemy_bullet_speed" in config:
             self.game.settings.enemy_bullet_speed = config["enemy_bullet_speed"]
+
+        # NOTE: debug print call
+        print(f"Applying settings for Phase {self.current_phase}")
         
     def update(self):
         """Update phase-related conditions and check for phase completion."""

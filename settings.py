@@ -6,9 +6,9 @@ class Settings:
     def __init__(self):
         """Initialize game's settings."""
         # Screen settings
-        self.background = pygame.image.load('images/ORB2.png')
-        self.screen_width = self.background.get_width()
-        self.screen_height = self.background.get_height()
+        self.initial_background = pygame.image.load('images/backgrounds/Starfield1_xl.png')
+        self.screen_width = self.initial_background.get_width()
+        self.screen_height = self.initial_background.get_height()
 
         # Star settings
         self.star_move_speed = 25

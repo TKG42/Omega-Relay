@@ -13,6 +13,8 @@ from button import Button
 from scoreboard import Scoreboard
 from phase_manager import PhaseManager
 
+# FIXME XXX FIXME: Minor bug present. Phase 1 background is the same as main menu background. Phase 1 background should match self.backgrounds phase 1. 
+
 # NOTE: Next features to implement: ...
 
 # Add large enemy type
@@ -34,6 +36,18 @@ class OmegaRelay:
 
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height), pygame.DOUBLEBUF)
         pygame.display.set_caption("Omega Relay")
+
+        # Set the initial background
+        self.current_background = self.settings.initial_background
+
+        self.backgrounds = {
+            'phase_1': pygame.image.load('images/backgrounds/PurpleNebula1_xl.png'),
+            'phase_2': pygame.image.load('images/backgrounds/PurpleNebula2_xl.png'),
+            'phase_3': pygame.image.load('images/backgrounds/PurpleNebula3_xl.png'),
+            'phase_4': pygame.image.load('images/backgrounds/PurpleNebula4_xl.png'),
+            'phase_5': pygame.image.load('images/backgrounds/PurpleNebula5_xl.png'),
+        }
+        self.main_menu_background = pygame.image.load('images/backgrounds/Starfield1_xl.png')
 
         # Load the title image for the main menu
         self.title_image = pygame.image.load('images/Ace13_t650x650.png')
@@ -88,21 +102,20 @@ class OmegaRelay:
 
     def _update_game_state(self):
         """Centralized game state management."""
-        # ISABEL: Stay in main menu state if already in main menu
         if self.state == GameState.MAIN_MENU:
             self.next_state = GameState.MAIN_MENU
-        # ISABEL: only switch to PHASE_CHANGE state if we are not already in that state
+
         elif self.state != GameState.PHASE_CHANGE and self.phase_manager.should_change_phase():
             self.next_state = GameState.PHASE_CHANGE
-            # ISABEL: Once you start the phase change, go to the next phase
             self.phase_manager.next_phase()
+
         elif self.state == GameState.PLAYING and self._is_in_danger():
-            # If a phase change is pending, don't switch to danger
             if self.next_state != GameState.PHASE_CHANGE:
                 self.next_state = GameState.DANGER
-        # Check if danger should persist or revert to playing state
+
         elif self.state == GameState.DANGER and not self._is_in_danger():
             self.next_state = GameState.PLAYING
+            
         elif self.state not in [GameState.PHASE_CHANGE, GameState.DANGER, GameState.GAME_OVER]:
             self.next_state = GameState.PLAYING
 
@@ -174,25 +187,40 @@ class OmegaRelay:
         # Transition to the main menu after 5 seconds
         if pygame.time.get_ticks() - self.game_over_start > 5000:
             self.game_over_start = None # Reset the timer for next game over
-            self.state = GameState.MAIN_MENU
-            self._execute_current_state()
+            # ISABEL: Add reset game here instead of during the entire main menu state
+            self.initiate_main_menu_state()
+
+    def initiate_main_menu_state(self):
+        self.reset_game()
+        self.state = GameState.MAIN_MENU
+        self._execute_current_state()
 
     def main_menu_state(self): 
         """Display the start game button, score data and other options."""
         # Ensure all game elements are reset for a clean state
-        self.reset_game()
+        # self.reset_game() # Moving this outside of main menu
         self.stars.empty() # Optionally clear the stars or handle them differently for the main menu.
-
-        # Draw the main menu
-        if isinstance(self.settings.background, tuple): # For a color background
-            self.screen.fill(self.settings.background)
-        else:                                           # For a background image
-            self.screen.blit((self.settings.background), (0, 0))
-        self.start_game_button.draw_button()
-        self.screen.blit(self.title_image, self.title_image_rect)
+        
+        # Call the method to render the main menu.
+        self._render_main_menu()
 
         # Update the screen
         pygame.display.flip()
+
+    def _render_main_menu(self):
+        """Access the main menu background"""
+        if self.main_menu_background:
+            self.current_background = self.main_menu_background
+        else:
+            print("Error: Main menu background not found.")
+            return # Exit the method if the background is not found
+        
+        # Update the screen with the main menu background
+        self.screen.blit(self.current_background, (0, 0))
+
+        # Draw the main menu items (e.g., title, buttons)
+        self.screen.blit(self.title_image, self.title_image_rect)
+        self.start_game_button.draw_button()
 
     def handle_phase_change(self):
         """Handle the game during a phase change."""
@@ -203,6 +231,13 @@ class OmegaRelay:
         # Clear out old aliens and bullets to prepare for new phase
         self.aliens.empty()
         self.bullets.empty()
+
+        phase_key = f'phase_{self.phase_manager.current_phase + 1}'
+        new_background = self.backgrounds.get(phase_key, None)
+        if new_background:
+            self.current_background = new_background
+        else:
+            print(f"Error: Background for phase {phase_key} not found.")
 
         # Draw phase level message
         self.sb.show_phase_level(self.phase_manager.current_phase)
@@ -238,8 +273,8 @@ class OmegaRelay:
                 # Handle immediate transition from game over to main menu
                 if self.state == GameState.GAME_OVER:
                     self.game_over_start = None # Reset timer
-                    self.state = GameState.MAIN_MENU
-                    self._execute_current_state()
+                    # ISABEL: Add reset game here instead of during the entire main menu state
+                    self.initiate_main_menu_state()
                     return # Skip further processing
 
     def _check_keydown_events(self, event):
@@ -470,7 +505,10 @@ class OmegaRelay:
 
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen."""
-        self.screen.blit(self.settings.background, (0, 0))
+        if self.current_background:
+            self.screen.blit(self.current_background, (0, 0))
+        else:
+            print("Error: No current background set.")
         self.stars.draw(self.screen)
         self.aliens.draw(self.screen)
 
