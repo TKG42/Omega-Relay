@@ -19,20 +19,21 @@ class PhaseManager:
              # ... Add configurations for each phase}
         ]
 
-    def initiate_phase_change(self):
-        """Initiate the phase change state."""
-        self.game.state = GameState.PHASE_CHANGE
-        self.game.sb.show_phase_level(self.current_phase)
-        # ... any other setup for phase change
-
     def next_phase(self):
         """Transition to the next phase if there are remaining phases."""
         if self.current_phase < self.total_phases:
             self.current_phase += 1
+            
+            # Clear out old aliens and bullets to prepare for new phase
+            self.game.aliens.empty()
+            self.game.bullets.empty()
+
+            # Switch to new background
+            self.game._background_shift()
 
             # Ensure all settings and counters are reset before updating
-            self.apply_phase_config()
             self.reset_phase_counters()
+            self.apply_phase_config()
 
             # Display new phase level in the center of the screen (HUD update)
             self.game.state = GameState.PHASE_CHANGE
@@ -72,11 +73,6 @@ class PhaseManager:
         """Update phase-related conditions and check for phase completion."""
         if self.should_change_phase():
             self.next_phase()
-
-            # Reset counters for the next phase
-            # self.aliens_spawned_this_phase = 0
-            # self.game.aliens_defeated_in_phase = 0
-            self.reset_phase_counters()
 
             # NOTE: debugging
             print("Updating PhaseManager...")

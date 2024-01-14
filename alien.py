@@ -26,6 +26,8 @@ class Alien(Sprite):
         # Random alien speed range
         min_speed, max_speed = self.settings.alien_speed_range
         self.speed = randint(min_speed, max_speed)
+        # NOTE debugging
+        print(f'Alien speed: {self.speed}')
 
         # Random HP between 2 and 3
         self.hit_points = randint(2, 3)

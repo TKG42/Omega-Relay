@@ -107,11 +107,12 @@ class OmegaRelay:
 
         elif self.state != GameState.PHASE_CHANGE and self.phase_manager.should_change_phase():
             self.next_state = GameState.PHASE_CHANGE
-            self.phase_manager.next_phase()
+            self.phase_manager.update()
 
         elif self.state == GameState.PLAYING and self._is_in_danger():
             if self.next_state != GameState.PHASE_CHANGE:
                 self.next_state = GameState.DANGER
+                self.initiate_danger_state()
 
         elif self.state == GameState.DANGER and not self._is_in_danger():
             self.next_state = GameState.PLAYING
@@ -173,7 +174,7 @@ class OmegaRelay:
         
     def game_over_state(self):
         """ Display the game over message and stop updating the ship"""
-         # Stop player control
+        # Stop player control
         self.ship.moving_up = False 
         self.ship.moving_down = False
         # You can update the background elements here if you want them to continue animating
@@ -195,17 +196,34 @@ class OmegaRelay:
         self.state = GameState.MAIN_MENU
         self._execute_current_state()
 
+    def initiate_playing_state(self):
+        self._background_shift()
+        self.state = GameState.PLAYING
+        self._execute_current_state()
+
+    def initiate_danger_state(self):
+        self.danger_start_time = pygame.time.get_ticks()
+        self.state = GameState.DANGER
+        self._execute_current_state()
+
+    def _background_shift(self):
+        """Checks phase, applies associated background to phase."""
+        # NOTE debugging
+        print(f'Phase {self.phase_manager}')
+        phase_key = f'phase_{self.phase_manager.current_phase}'
+        new_background = self.backgrounds.get(phase_key, None)
+        if new_background:
+            self.current_background = new_background
+        else:
+            print(f"Error: Background for phase {phase_key} not found.")
+
     def main_menu_state(self): 
         """Display the start game button, score data and other options."""
         # Ensure all game elements are reset for a clean state
-        # self.reset_game() # Moving this outside of main menu
         self.stars.empty() # Optionally clear the stars or handle them differently for the main menu.
         
         # Call the method to render the main menu.
         self._render_main_menu()
-
-        # Update the screen
-        pygame.display.flip()
 
     def _render_main_menu(self):
         """Access the main menu background"""
@@ -221,27 +239,15 @@ class OmegaRelay:
         # Draw the main menu items (e.g., title, buttons)
         self.screen.blit(self.title_image, self.title_image_rect)
         self.start_game_button.draw_button()
+        
+        # Update the screen
+        pygame.display.flip()
 
     def handle_phase_change(self):
         """Handle the game during a phase change."""
         # Continue to allow ship control and star rush
         self.ship.update()
         self._update_starshower()
-
-        # Clear out old aliens and bullets to prepare for new phase
-        self.aliens.empty()
-        self.bullets.empty()
-
-        phase_key = f'phase_{self.phase_manager.current_phase + 1}'
-        new_background = self.backgrounds.get(phase_key, None)
-        if new_background:
-            self.current_background = new_background
-        else:
-            print(f"Error: Background for phase {phase_key} not found.")
-
-        # Draw phase level message
-        self.sb.show_phase_level(self.phase_manager.current_phase)
-        self.sb.draw_phase_level()
 
         # Initiate a delay or countdown before the next phase starts
         if not hasattr(self, "phase_change_start") or self.phase_change_start is None:
@@ -251,13 +257,9 @@ class OmegaRelay:
         if pygame.time.get_ticks() - self.phase_change_start > 3500: # 3.5 seconds
             self.phase_change_start = None
 
-            # Apply new phase settings and spawn new aliens
-            self.phase_manager.apply_phase_config() 
-            self.state = GameState.PLAYING # Change back to playing state to resume game
-            self._create_new_column_of_aliens() # Spawn new aliens for the new phase
-            
-            # Reset phase-related counters in phase manager for the new phase
-            self.phase_manager.reset_phase_counters()
+            # Change back to playing state to resume game
+            self.state = GameState.PLAYING
+            self._execute_current_state()
 
     def _check_events(self):
         """Respond to keypresses and mouse events."""
@@ -315,17 +317,11 @@ class OmegaRelay:
             if self.start_game_button.rect.collidepoint(mouse_x, mouse_y):
                 # Reset necessary game elements here before switching to playing state.
                 self.reset_game()
-                self.state = GameState.PLAYING
+                self.initiate_playing_state()
 
     def _create_star(self, star_number):
         """Create a star and place it in the column."""
         star = Star(self)
-        star_width, star_height = star.rect.size
-        star.x = star_width + 2 * star_width * star_number
-
-        # Random star position
-        star.rect.x = randint(star_width, 1792 - 2 * star_width)
-        star.rect.y = randint(star_height, 1024 - 2 * star_height)
         self.stars.add(star)
 
     def _starflight(self):
@@ -348,12 +344,9 @@ class OmegaRelay:
     
     def _create_new_column_of_stars(self):
         """Create a new column of stars at the right side of the screen."""
-        for _ in range(3): # Change the range to add more stars
-            star = Star(self)
-            # Start the new star at a random y position on the right side of the screen.
-            star.rect.y = randint(0, self.settings.screen_height - star.rect.height)
-            star.rect.x = self.settings.screen_width
-            self.stars.add(star)
+        for star_number in range(3): # Change the range to add more stars
+            # ISABEL: Removed redundant code
+            self._create_star(star_number)
 
     def _fire_bullet(self):
         """Create a new bullet and add it to the bullets group."""
@@ -416,17 +409,15 @@ class OmegaRelay:
             # Threshold for checking if an alien has passed
             if alien.rect.right < self.settings.screen_width * 0.02: # 2% of screen width
                 self.aliens.remove(alien)
-                self.aliens_defeated_in_phase += 1
-                # NOTE debugging
-                print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
+                self.handle_alien_defeat() # ISABEL: Previously was self.aliens_defeated_in_phase += 1
                 self.stats.lives_left -= 1
                 if self.stats.lives_left <= 0:
                     self.state = GameState.GAME_OVER
                     self._execute_current_state()
                     break  # Exit the loop as we're going to game over
                 elif self.state == GameState.PLAYING:  # Only set to danger if we're currently playing
-                    self.state = GameState.DANGER
-                    self.danger_start_time = pygame.time.get_ticks()
+                    # ISABEL: Refactoring code
+                    self.initiate_danger_state()
                     break  # Only trigger once per frame
 
     def handle_alien_defeat(self):
@@ -437,7 +428,7 @@ class OmegaRelay:
         print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
         # Go to the next phase if plater has defeated all the aliens
         if self.state == GameState.PLAYING and self.aliens_defeated_in_phase >= self.phase_manager.phase_configs[self.phase_manager.current_phase - 1]["spawn_rate"]:
-            self.phase_manager.next_phase()
+            self.phase_manager.update()
         # ... any additional logic for defeating an alien...
 
     def _update_aliens(self):
@@ -466,12 +457,8 @@ class OmegaRelay:
         # NOTE Debugging
         print(f'Aliens spawned this phase: {self.phase_manager.aliens_spawned_this_phase}')
         if self.phase_manager.aliens_spawned_this_phase < self.phase_manager.phase_configs[self.phase_manager.current_phase - 1]["spawn_rate"]:
-            for _ in range(3): # Change the range to add more aliens
-                alien = Alien(self)
-                # Start the new alien at a random y position on the right side of the screen.
-                alien.rect.y = randint(0, self.settings.screen_height - alien.rect.height)
-                alien.rect.x = self.settings.screen_width
-                self.aliens.add(alien)
+            for alien_number in range(3): # Change the range to add more aliens
+                self._create_alien(alien_number)
                 self.phase_manager.aliens_spawned_this_phase += 1 # Increment the counter
 
     def _alien_rush(self):
@@ -482,11 +469,6 @@ class OmegaRelay:
     def _create_alien(self, alien_number):
         """Create an alien and place it in the column."""
         alien = Alien(self)
-        alien_width, alien_height = alien.rect.size
-        alien.x = alien_width + 2 * alien_width * alien_number
-
-        alien.rect.x = randint(alien_width, 1792 - 2 * alien_width)
-        alien.rect.y = randint(alien_width, 1024 - 2 * alien_height)
         self.aliens.add(alien)
 
     def _flash_danger_message(self):
