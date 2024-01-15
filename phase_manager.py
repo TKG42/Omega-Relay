@@ -30,14 +30,20 @@ class PhaseManager:
         if self.current_phase < self.total_phases:
             self.current_phase += 1
 
+            # Clear out old aliens and bullets to prepare for new phase
+            self.game.aliens.empty()
+            self.game.bullets.empty()
+
+            # Draw phase level message
+            self.game.sb.show_phase_level(self.current_phase)
+            self.game.sb.draw_phase_level()
+
             # Ensure all settings and counters are reset before updating
             self.apply_phase_config()
             self.reset_phase_counters()
 
             # Display new phase level in the center of the screen (HUD update)
             self.game.state = GameState.PHASE_CHANGE
-            self.game.sb.show_phase_level(self.current_phase)
-            # Reset the counter for the new phase
                     
     def reset_phase_counters(self):
         """Reset the counters for aliens spawned and defeated in the current phase."""
@@ -69,11 +75,6 @@ class PhaseManager:
         """Update phase-related conditions and check for phase completion."""
         if self.should_change_phase():
             self.next_phase()
-
-            # Reset counters for the next phase
-            # self.aliens_spawned_this_phase = 0
-            # self.game.aliens_defeated_in_phase = 0
-            self.reset_phase_counters()
 
             # NOTE: debugging
             print("Updating PhaseManager...")

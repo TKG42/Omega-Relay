@@ -1,6 +1,5 @@
 import sys 
 import pygame
-from random import randint
 from settings import Settings
 from game_state import GameState
 from star import Star
@@ -13,16 +12,7 @@ from button import Button
 from scoreboard import Scoreboard
 from phase_manager import PhaseManager
 
-# NOTE: Next features to implement: ...
-
-# Add large enemy type
-# Add phase number to HUD (NOTE: might not do this)
-# Add a title to main menu
-# Add a page to main menu that shows player controls
-# Add boss fight
-# Add power ups
-# Add scoreboard
-# Add sound
+# NOTE: Omega Relay version 2.0
 
 class OmegaRelay:
     """Overall class to manage game assets and behavior."""
@@ -95,7 +85,7 @@ class OmegaRelay:
         elif self.state != GameState.PHASE_CHANGE and self.phase_manager.should_change_phase():
             self.next_state = GameState.PHASE_CHANGE
             # ISABEL: Once you start the phase change, go to the next phase
-            self.phase_manager.next_phase()
+            self.phase_manager.update()
         elif self.state == GameState.PLAYING and self._is_in_danger():
             # If a phase change is pending, don't switch to danger
             if self.next_state != GameState.PHASE_CHANGE:
@@ -200,14 +190,6 @@ class OmegaRelay:
         self.ship.update()
         self._update_starshower()
 
-        # Clear out old aliens and bullets to prepare for new phase
-        self.aliens.empty()
-        self.bullets.empty()
-
-        # Draw phase level message
-        self.sb.show_phase_level(self.phase_manager.current_phase)
-        self.sb.draw_phase_level()
-
         # Initiate a delay or countdown before the next phase starts
         if not hasattr(self, "phase_change_start") or self.phase_change_start is None:
             self.phase_change_start = pygame.time.get_ticks()
@@ -282,15 +264,9 @@ class OmegaRelay:
                 self.reset_game()
                 self.state = GameState.PLAYING
 
-    def _create_star(self, star_number):
+    def _create_star(self):
         """Create a star and place it in the column."""
         star = Star(self)
-        star_width, star_height = star.rect.size
-        star.x = star_width + 2 * star_width * star_number
-
-        # Random star position
-        star.rect.x = randint(star_width, 1792 - 2 * star_width)
-        star.rect.y = randint(star_height, 1024 - 2 * star_height)
         self.stars.add(star)
 
     def _starflight(self):
@@ -314,11 +290,7 @@ class OmegaRelay:
     def _create_new_column_of_stars(self):
         """Create a new column of stars at the right side of the screen."""
         for _ in range(3): # Change the range to add more stars
-            star = Star(self)
-            # Start the new star at a random y position on the right side of the screen.
-            star.rect.y = randint(0, self.settings.screen_height - star.rect.height)
-            star.rect.x = self.settings.screen_width
-            self.stars.add(star)
+            self._create_star()
 
     def _fire_bullet(self):
         """Create a new bullet and add it to the bullets group."""
@@ -402,7 +374,7 @@ class OmegaRelay:
         print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
         # Go to the next phase if plater has defeated all the aliens
         if self.state == GameState.PLAYING and self.aliens_defeated_in_phase >= self.phase_manager.phase_configs[self.phase_manager.current_phase - 1]["spawn_rate"]:
-            self.phase_manager.next_phase()
+            self.phase_manager.update()
         # ... any additional logic for defeating an alien...
 
     def _update_aliens(self):
@@ -432,11 +404,7 @@ class OmegaRelay:
         print(f'Aliens spawned this phase: {self.phase_manager.aliens_spawned_this_phase}')
         if self.phase_manager.aliens_spawned_this_phase < self.phase_manager.phase_configs[self.phase_manager.current_phase - 1]["spawn_rate"]:
             for _ in range(3): # Change the range to add more aliens
-                alien = Alien(self)
-                # Start the new alien at a random y position on the right side of the screen.
-                alien.rect.y = randint(0, self.settings.screen_height - alien.rect.height)
-                alien.rect.x = self.settings.screen_width
-                self.aliens.add(alien)
+                self._create_alien()
                 self.phase_manager.aliens_spawned_this_phase += 1 # Increment the counter
 
     def _alien_rush(self):
@@ -444,14 +412,9 @@ class OmegaRelay:
         for alien in self.aliens.sprites():
             alien.rect.x -= alien.speed
 
-    def _create_alien(self, alien_number):
+    def _create_alien(self):
         """Create an alien and place it in the column."""
         alien = Alien(self)
-        alien_width, alien_height = alien.rect.size
-        alien.x = alien_width + 2 * alien_width * alien_number
-
-        alien.rect.x = randint(alien_width, 1792 - 2 * alien_width)
-        alien.rect.y = randint(alien_width, 1024 - 2 * alien_height)
         self.aliens.add(alien)
 
     def _flash_danger_message(self):
