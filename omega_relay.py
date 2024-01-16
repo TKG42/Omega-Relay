@@ -12,7 +12,7 @@ from button import Button
 from scoreboard import Scoreboard
 from phase_manager import PhaseManager
 
-# NOTE: Omega Relay version 2.0
+# NOTE: Omega Relay version 2.1
 
 class OmegaRelay:
     """Overall class to manage game assets and behavior."""
@@ -232,8 +232,10 @@ class OmegaRelay:
             self.ship.moving_down = True
         elif event.key == pygame.K_q:
             sys.exit()
-        elif event.key == pygame.K_SPACE:
+        elif event.key == pygame.K_SPACE and self.state == GameState.PLAYING or GameState.DANGER:
             self._fire_bullet()
+        elif event.key == pygame.K_n and self.state == GameState.PLAYING:   # NOTE: Switches to next phase with 'n'. Remove when done testing
+            self.phase_manager.next_phase()
 
     def _check_keyup_events(self, event):
         """Respond to key releases."""
@@ -433,6 +435,9 @@ class OmegaRelay:
 
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen."""
+        # Ternary operator
+        background_key = 'main_menu' if self.state == GameState.MAIN_MENU else f'phase_{self.phase_manager.current_phase}'
+        self.settings.background = self.settings.backgrounds.get(background_key, 'main_menu')
         self.screen.blit(self.settings.background, (0, 0))
         self.stars.draw(self.screen)
         self.aliens.draw(self.screen)

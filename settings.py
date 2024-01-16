@@ -6,7 +6,17 @@ class Settings:
     def __init__(self):
         """Initialize game's settings."""
         # Screen settings
-        self.background = pygame.image.load('images/ORB2.png')
+        # NOTE: Make sure all png images have 32 bit depth. Use png bit depth converter.py. 
+        self.background = pygame.image.load('images/backgrounds/Starfield1_xl.png')
+        self.backgrounds = {
+            'main_menu': pygame.image.load('images/backgrounds/Starfield1_xl.png'),
+            'phase_1': pygame.image.load('images/backgrounds/PurpleNebula1_xl32.png'),              
+            'phase_2': pygame.image.load('images/backgrounds/PurpleNebula2_xl32.png'),
+            'phase_3': pygame.image.load('images/backgrounds/PurpleNebula3_xl.png'),
+            'phase_4': pygame.image.load('images/backgrounds/PurpleNebula4_xl.png'),
+            'phase_5': pygame.image.load('images/backgrounds/PurpleNebula5_xl.png'),
+        }
+    
         self.screen_width = self.background.get_width()
         self.screen_height = self.background.get_height()
 
@@ -18,7 +28,7 @@ class Settings:
 
         # Player HP - decreases to zero when hit by an alien,
         # decrements when alien ships pass player ship
-        self.player_lives = 3
+        self.player_lives = 20   # HACK: for testing. return to 3 when done. 
 
         # Bullet settings
         self.bullet_speed = 40 
