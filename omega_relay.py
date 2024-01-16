@@ -232,7 +232,7 @@ class OmegaRelay:
             self.ship.moving_down = True
         elif event.key == pygame.K_q:
             sys.exit()
-        elif event.key == pygame.K_SPACE and self.state == GameState.PLAYING or GameState.DANGER:
+        elif event.key == pygame.K_SPACE and self.state in [GameState.PLAYING, GameState.DANGER]:
             self._fire_bullet()
         elif event.key == pygame.K_n and self.state == GameState.PLAYING:   # NOTE: Switches to next phase with 'n'. Remove when done testing
             self.phase_manager.next_phase()
@@ -447,8 +447,9 @@ class OmegaRelay:
             self.sb.prep_lives()
             self.sb.show_lives()
 
-        for bullet in self.bullets.sprites():
-            bullet.draw_bullet()
+        if self.state in [GameState.PLAYING, GameState.DANGER]:
+            for bullet in self.bullets.sprites():
+                bullet.draw_bullet()
 
         self.explosions.update()
         self.explosions.draw(self.screen)
