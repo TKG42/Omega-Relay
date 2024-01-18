@@ -1,18 +1,30 @@
 import sys 
 import pygame
+import random
 from settings import Settings
 from game_state import GameState
 from star import Star
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
+from alien_eyespawn import AlienEyeSpawn
+from alien_large import AlienLarge
+from alien_railgun import AlienRailgun
 from explosion import Explosion
 from game_stats import GameStats
 from button import Button
 from scoreboard import Scoreboard
 from phase_manager import PhaseManager
 
-# NOTE: Omega Relay version 2.1
+# NOTE: Omega Relay version 2.2
+# FIXME: AlienEyeSpawn, AlienLarge and AlienRailGun's hitbox/ rect is too large.
+# FIXME: AlienRailgun is not animating. 
+# NOTE: Tasks:
+# Adjust phase configs for game balance
+# Add enemy firing mechanic (Basic alien and Railgun alien)
+# Add player muzzle flash animation
+# Add individual laser beam attack (pre-mini boss)
+# implement unique AlienRailgun behavior. 
 
 class OmegaRelay:
     """Overall class to manage game assets and behavior."""
@@ -321,17 +333,44 @@ class OmegaRelay:
         for aliens in collisions.values():
             for alien in aliens:
                 alien.hit_points -= 1
-                if alien.hit_points <= 0:
-                    explosion = Explosion(self.screen, alien.rect.center, "alien")
-                    self.explosions.add(explosion)
+                if alien.hit_points <= 0 and alien.alive:
+                    alien.die()
                     self.aliens.remove(alien)
                     self.handle_alien_defeat()
                     # NOTE debugging
                     print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
+  
+        for bullet in collisions:
+            for alien in collisions[bullet]:
+                # Check the type of alien and handle accordingly
+                if isinstance(alien, AlienEyeSpawn):
+                    self._handle_collision_with_AlienEyeSpawn(alien)
+                elif isinstance(alien, AlienLarge):
+                    self._handle_collision_with_AlienLarge(alien)
+                elif isinstance(alien, AlienRailgun):
+                    self._handle_collision_with_AlienRailgun(alien)
           
         if not self.aliens:
             # Destroy existing bullets
             self.bullets.empty()
+
+    def _handle_collision_with_AlienEyeSpawn(self, alien):
+    # Decrease HP or handle the death of the alien
+        alien.hit_points -= 1
+        if alien.hit_points <= 0:
+            alien.die()  # Or however you handle the death of the alien
+
+    def _handle_collision_with_AlienLarge(self, alien):
+    # Decrease HP or handle the death of the alien
+        alien.hit_points -= 1
+        if alien.hit_points <= 0:
+            alien.die()  # Or however you handle the death of the alien
+
+    def _handle_collision_with_AlienRailgun(self, alien):
+    # Decrease HP or handle the death of the alien
+        alien.hit_points -= 1
+        if alien.hit_points <= 0:
+            alien.die()  # Or however you handle the death of the alien
 
     def _ship_hit(self):
         """Respond to the ship being hit by an alien."""
@@ -381,6 +420,7 @@ class OmegaRelay:
 
     def _update_aliens(self):
         """Update the position of all aliens."""
+        self.aliens.update()
         self._alien_rush()
         # Remove any aliens that have moved to the edge of the left side screen
         for alien in self.aliens.copy():
@@ -401,12 +441,23 @@ class OmegaRelay:
 
     def _create_new_column_of_aliens(self):
         """Create a new column of aliens at the right side of the screen."""
-        # Check if the limit of aliens for the current phase has been reached
+        current_phase_config = self.phase_manager.phase_configs[self.phase_manager.current_phase - 1]
+        alien_types_to_spawn = current_phase_config.get("alien_types", ["BasicAlien"])
+    
         # NOTE Debugging
         print(f'Aliens spawned this phase: {self.phase_manager.aliens_spawned_this_phase}')
+
         if self.phase_manager.aliens_spawned_this_phase < self.phase_manager.phase_configs[self.phase_manager.current_phase - 1]["spawn_rate"]:
             for _ in range(3): # Change the range to add more aliens
-                self._create_alien()
+                alien_type = random.choice(alien_types_to_spawn)
+                if alien_type == "BasicAlien":
+                    self._create_alien(Alien)
+                elif alien_type == "AlienEyeSpawn":
+                    self._create_alien(AlienEyeSpawn)
+                elif alien_type == "AlienLarge":
+                    self._create_alien(AlienLarge)
+                elif alien_type == "AlienRailgun":
+                    self._create_alien(AlienRailgun)
                 self.phase_manager.aliens_spawned_this_phase += 1 # Increment the counter
 
     def _alien_rush(self):
@@ -414,9 +465,9 @@ class OmegaRelay:
         for alien in self.aliens.sprites():
             alien.rect.x -= alien.speed
 
-    def _create_alien(self):
+    def _create_alien(self, alien_class):
         """Create an alien and place it in the column."""
-        alien = Alien(self)
+        alien = alien_class(self)
         self.aliens.add(alien)
 
     def _flash_danger_message(self):

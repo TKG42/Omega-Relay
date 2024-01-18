@@ -1,5 +1,6 @@
 from pygame.sprite import Sprite
 from random import randint
+from explosion import Explosion
 import pygame
 
 class Alien(Sprite):
@@ -8,6 +9,7 @@ class Alien(Sprite):
     def __init__(self, or_game):
         """Initialize the alien and set its starting position."""
         super().__init__()
+        self.or_game = or_game # Reference to the main game instance
         self.screen = or_game.screen
         self.settings = or_game.settings
 
@@ -30,7 +32,20 @@ class Alien(Sprite):
         # Random HP between 2 and 3
         self.hit_points = randint(2, 3)
 
+        # State
+        self.alive = True
+
     # NOTE: update method for refactor, to be filled out or removed...
+        
+    def die(self):
+        """Trigger the death animation."""
+        if self.alive:
+            explosion = Explosion(self.screen, self.rect.center, "alien")
+            self.or_game.explosions.add(explosion)
+            self.kill()
+            self.alive = False
 
     def update(self):
         """Update aliens"""
+        self.rect.x -= self.speed
+        # You can add more logic here if needed, like checking for off-screen

@@ -5,7 +5,7 @@ import pygame
 class AlienLarge(Sprite):
     """Class representing large writhing enemy."""
     def __init__(self, or_game):
-        super().__init__(or_game)
+        super().__init__()
         self.screen = or_game.screen
         self.settings = or_game.settings
 
@@ -30,6 +30,9 @@ class AlienLarge(Sprite):
         # Speed
         self.speed = randint(*self.settings.alien_speed_range)
 
+        # HP
+        self.hit_points = 6
+
         # Animation timing
         self.last_update = pygame.time.get_ticks()
         self.frame_rate = 100 # milliseconds per frame
@@ -46,6 +49,14 @@ class AlienLarge(Sprite):
             frames.append(frame)
         return frames
     
+    def die(self):
+        """Trigger the death animation."""
+        if self.alive:
+            self.animation_frames = self.death_frames
+            self.frame_index = 0
+            self.alive = False
+            # Do not call self.kill() here; let the update method handle it
+
     def update(self):
         """Update the alien's position and animation."""
         # Update position
@@ -61,9 +72,3 @@ class AlienLarge(Sprite):
 
             if not self.alive and self.frame_index == len(self.death_frames) - 1:
                 self.kill() # Remove the sprite after the death animation. 
-
-    def die(self):
-        """Trigger the death animation."""
-        self.animation_frames = self.death_frames
-        self.frame_index = 0
-        self.alive = False
