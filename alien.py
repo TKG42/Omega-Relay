@@ -29,3 +29,8 @@ class Alien(Sprite):
 
         # Random HP between 2 and 3
         self.hit_points = randint(2, 3)
+
+    # NOTE: update method for refactor, to be filled out or removed...
+
+    def update(self):
+        """Update aliens"""

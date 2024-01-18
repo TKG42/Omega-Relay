@@ -10,11 +10,16 @@ class Settings:
         self.background = pygame.image.load('images/backgrounds/Starfield1_xl.png')
         self.backgrounds = {
             'main_menu': pygame.image.load('images/backgrounds/Starfield1_xl.png'),
-            'phase_1': pygame.image.load('images/backgrounds/PurpleNebula1_xl32.png'),              
-            'phase_2': pygame.image.load('images/backgrounds/PurpleNebula2_xl32.png'),
-            'phase_3': pygame.image.load('images/backgrounds/PurpleNebula3_xl.png'),
-            'phase_4': pygame.image.load('images/backgrounds/PurpleNebula4_xl.png'),
-            'phase_5': pygame.image.load('images/backgrounds/PurpleNebula5_xl.png'),
+            'phase_1': pygame.image.load('images/backgrounds/Starfield1_xl.png'),              
+            'phase_2': pygame.image.load('images/backgrounds/BlueNebula1_xl.png'),
+            'phase_3': pygame.image.load('images/backgrounds/BlueNebula2_xl.png'),
+            'phase_4': pygame.image.load('images/backgrounds/BlueNebula3_xl.png'),
+            'phase_5': pygame.image.load('images/backgrounds/BlueNebula4_xl.png'),
+            'phase_6': pygame.image.load('images/backgrounds/PurpleNebula1_xl.png'),
+            'phase_7': pygame.image.load('images/backgrounds/PurpleNebula2_xl.png'),
+            'phase_8': pygame.image.load('images/backgrounds/PurpleNebula3_xl.png'),
+            'phase_9': pygame.image.load('images/backgrounds/PurpleNebula5_xl.png'),
+            'phase_10': pygame.image.load('images/backgrounds/PurpleNebula4_xl.png'),
         }
     
         self.screen_width = self.background.get_width()

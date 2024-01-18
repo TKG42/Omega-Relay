@@ -5,17 +5,23 @@ class PhaseManager:
         """Manages phases/levels of the game"""
         self.game = or_game
         self.current_phase = 1
-        self.total_phases = 5 # Excluding boss fight
+        self.total_phases = 10 # Excluding boss fight
         self.aliens_spawned_this_phase = 0
         self.aliens_defeated_in_phase = 0
 
         # Define phase characteristics like enemy speed, spawn rates, etc.
+        # NOTE: Edit config values when OR is feature complete: NOTE
         self.phase_configs = [
             {"speed_range": (1, 10), "spawn_rate": 12, "player_speed": 30, "bullet_speed": 30}, # Phase 1
              {"speed_range": (1, 15), "spawn_rate": 12, "player_speed": 30, "bullet_speed": 40}, # Phase 2
               {"speed_range": (5, 20), "spawn_rate": 12, "player_speed": 40, "bullet_speed": 50}, # Phase 3
                {"speed_range": (5, 20), "spawn_rate": 12, "player_speed": 40, "bullet_speed": 50, "enemy_bullet_speed": 30}, # Phase 4
                 {"speed_range": (10, 25), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40}, # Phase 5
+                {"speed_range": (10, 25), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40}, # Phase 6
+                {"speed_range": (10, 25), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40}, # Phase 7
+                {"speed_range": (10, 25), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40}, # Phase 8
+                {"speed_range": (10, 25), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40}, # Phase 9
+                {"speed_range": (10, 25), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40}, # Phase 10
              # ... Add configurations for each phase}
         ]
 
