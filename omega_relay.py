@@ -468,7 +468,8 @@ class OmegaRelay:
     def _alien_rush(self):
         """Cause all Aliens to rush from the right side of the screen to the left."""
         for alien in self.aliens.sprites():
-            alien.rect.x -= alien.speed
+            if alien.alive:
+                alien.rect.x -= alien.speed
 
     def _create_alien(self, alien_class):
         """Create an alien and place it in the column."""

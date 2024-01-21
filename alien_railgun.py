@@ -79,8 +79,9 @@ class AlienRailgun(Sprite):
     def update(self):
         """Update the alien's position and animation."""
         # Update position
-        self.x -= self.speed
-        self.rect.x = self.x
+        if self.alive:
+            self.x -= self.speed
+            self.rect.x = self.x
 
         # Update animation
         now = pygame.time.get_ticks()
