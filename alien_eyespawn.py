@@ -29,7 +29,8 @@ class AlienEyeSpawn(Sprite):
         self.x = float(self.rect.x)
 
         # Speed
-        self.speed = randint(*self.settings.alien_speed_range)
+        # self.speed = randint(*self.settings.alien_speed_range)
+        self.speed = randint(5, 10)
 
         # HP
         self.hit_points = randint(2, 3)
@@ -40,6 +41,7 @@ class AlienEyeSpawn(Sprite):
 
         # State 
         self.alive = True
+        self.is_dying = False
 
     def load_animation_frames(self, base_path, frame_count):
         """Load frames for the animation."""
@@ -52,7 +54,8 @@ class AlienEyeSpawn(Sprite):
 
     def die(self):
         """Trigger the death animation."""
-        if self.alive:
+        if not self.is_dying:
+            self.is_dying = True
             self.animation_frames = self.death_frames
             self.frame_index = 0
             self.alive = False

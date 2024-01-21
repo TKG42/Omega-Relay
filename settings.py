@@ -15,7 +15,7 @@ class Settings:
             'phase_3': pygame.image.load('images/backgrounds/BlueNebula2_xl.png'),
             'phase_4': pygame.image.load('images/backgrounds/BlueNebula3_xl.png'),
             'phase_5': pygame.image.load('images/backgrounds/BlueNebula4_xl.png'),
-            'phase_6': pygame.image.load('images/backgrounds/PurpleNebula1_xl.png'),
+            'phase_6': pygame.image.load('images/backgrounds/PurpleNebula6_xl.png'),
             'phase_7': pygame.image.load('images/backgrounds/PurpleNebula2_xl.png'),
             'phase_8': pygame.image.load('images/backgrounds/PurpleNebula3_xl.png'),
             'phase_9': pygame.image.load('images/backgrounds/PurpleNebula5_xl.png'),
@@ -33,7 +33,7 @@ class Settings:
 
         # Player HP - decreases to zero when hit by an alien,
         # decrements when alien ships pass player ship
-        self.player_lives = 20   # HACK: for testing. return to 3 when done. 
+        self.player_lives = 13   # HACK: for testing. return to 3 when done. 
 
         # Bullet settings
         self.bullet_speed = 40 

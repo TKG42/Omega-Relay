@@ -17,13 +17,14 @@ from scoreboard import Scoreboard
 from phase_manager import PhaseManager
 
 # NOTE: Omega Relay version 2.2
-# FIXME: AlienEyeSpawn, AlienLarge and AlienRailGun's hitbox/ rect is too large.
 # FIXME: AlienRailgun is not animating. 
+# FIXME: Replace AlienEyeSpawn death animation (need a big animation)
+# FIXME: New phases (6 - 10) are not moving to the next phase after all enemies have been defeated
+# FIXME: New enemy type death animations continue to move towards left side of screen
 # NOTE: Tasks:
 # Adjust phase configs for game balance
 # Add enemy firing mechanic (Basic alien and Railgun alien)
 # Add player muzzle flash animation
-# Add individual laser beam attack (pre-mini boss)
 # implement unique AlienRailgun behavior. 
 
 class OmegaRelay:
@@ -342,13 +343,14 @@ class OmegaRelay:
   
         for bullet in collisions:
             for alien in collisions[bullet]:
+                if not alien.is_dying: # Only consider aliens that are not dying
                 # Check the type of alien and handle accordingly
-                if isinstance(alien, AlienEyeSpawn):
-                    self._handle_collision_with_AlienEyeSpawn(alien)
-                elif isinstance(alien, AlienLarge):
-                    self._handle_collision_with_AlienLarge(alien)
-                elif isinstance(alien, AlienRailgun):
-                    self._handle_collision_with_AlienRailgun(alien)
+                    if isinstance(alien, AlienEyeSpawn):
+                        self._handle_collision_with_AlienEyeSpawn(alien)
+                    elif isinstance(alien, AlienLarge):
+                        self._handle_collision_with_AlienLarge(alien)
+                    elif isinstance(alien, AlienRailgun):
+                        self._handle_collision_with_AlienRailgun(alien)
           
         if not self.aliens:
             # Destroy existing bullets
@@ -392,7 +394,7 @@ class OmegaRelay:
         """Check if any aliens made it to the left side of the screen."""
         for alien in self.aliens.sprites():
             # Threshold for checking if an alien has passed
-            if alien.rect.right < self.settings.screen_width * 0.02: # 2% of screen width
+            if alien.rect.right < self.settings.screen_width * 0.02 and not alien.is_dying: # 2% of screen width
                 self.aliens.remove(alien)
                 self.aliens_defeated_in_phase += 1
                 # NOTE debugging
@@ -433,9 +435,12 @@ class OmegaRelay:
             self._create_new_column_of_aliens()
 
         # Look for alien-ship-collisions.
-        if pygame.sprite.spritecollideany(self.ship, self.aliens):
-            self._ship_hit()
-
+        collision_aliens = pygame.sprite.spritecollide(self.ship, self.aliens, False)
+        for alien in collision_aliens:
+            if not alien.is_dying:
+                self._ship_hit()
+                break # Once a collision with a live alien is detected, handle it and exit loop
+           
         # Look for aliens that have reached the left side of the screen
         self._check_aliens_leftscreen()
 

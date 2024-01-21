@@ -11,7 +11,7 @@ class Ship:
 
         # Load the ship image and get its rect.
         # NOTE - important: ship images directly from the space shooter creation kit2 must have dimensions reduced to 40% - NOTE
-        self.image = pygame.image.load('images/player-ships/M5_t_ready.png')
+        self.image = pygame.image.load('images/player-ships/M5R_t_ready.png')
         self.rect = self.image.get_rect()
 
         # Start each new ship at the left center of the screen.

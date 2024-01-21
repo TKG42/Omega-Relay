@@ -28,7 +28,8 @@ class AlienLarge(Sprite):
         self.x = float(self.rect.x)
 
         # Speed
-        self.speed = randint(*self.settings.alien_speed_range)
+        # self.speed = randint(*self.settings.alien_speed_range)
+        self.speed = randint(3, 9)
 
         # HP
         self.hit_points = 6
@@ -39,6 +40,7 @@ class AlienLarge(Sprite):
 
         # State 
         self.alive = True
+        self.is_dying = False
 
     def load_animation_frames(self, base_path, frame_count):
         """Load frames for the animation."""
@@ -51,7 +53,8 @@ class AlienLarge(Sprite):
     
     def die(self):
         """Trigger the death animation."""
-        if self.alive:
+        if not self.is_dying:
+            self.is_dying = True
             self.animation_frames = self.death_frames
             self.frame_index = 0
             self.alive = False

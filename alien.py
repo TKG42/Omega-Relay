@@ -34,12 +34,14 @@ class Alien(Sprite):
 
         # State
         self.alive = True
+        self.is_dying = False
 
     # NOTE: update method for refactor, to be filled out or removed...
         
     def die(self):
         """Trigger the death animation."""
-        if self.alive:
+        if not self.is_dying:
+            self.is_dying = True
             explosion = Explosion(self.screen, self.rect.center, "alien")
             self.or_game.explosions.add(explosion)
             self.kill()
