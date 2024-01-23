@@ -12,6 +12,7 @@ class AlienRailgun(Sprite):
     """Class representing large, powerful railgun enemy."""
     def __init__(self, or_game):
         super().__init__()
+        self.or_game = or_game # Reference to the main game instance
         self.screen = or_game.screen
         self.settings = or_game.settings
 
@@ -91,7 +92,8 @@ class AlienRailgun(Sprite):
             self.image = self.animation_frames[self.frame_index]
 
             if not self.alive and self.frame_index == len(self.death_frames) - 1:
-                self.kill() # Remove the sprite after the death animation. 
+                self.kill() # Remove the sprite after the death animation.
+                self.or_game.handle_alien_defeat()
 
         # If the alien has halted and is alive, start firing
         if self.rect.x < self.settings.screen_width * 0.8 and self.alive:
