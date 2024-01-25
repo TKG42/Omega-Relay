@@ -16,7 +16,7 @@ class PhaseManager:
             {"speed_range": (1, 7), "spawn_rate": 12, "player_speed": 30, "bullet_speed": 40, "alien_types": ["BasicAlien"]}, # Phase 2
             {"speed_range": (3, 10), "spawn_rate": 12, "player_speed": 40, "bullet_speed": 50, "alien_types": ["BasicAlien"]}, # Phase 3
             {"speed_range": (3, 12), "spawn_rate": 12, "player_speed": 40, "bullet_speed": 50, "enemy_bullet_speed": 30, "alien_types": ["BasicAlien"]}, # Phase 4
-            {"speed_range": (5, 15), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn"]}, # Phase 5
+            {"speed_range": (5, 12), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn"]}, # Phase 5
             {"speed_range": (8, 15), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn"]}, # Phase 6
             {"speed_range": (10, 18), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn"]}, # Phase 7
             {"speed_range": (10, 20), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn", "AlienLarge"]}, # Phase 8

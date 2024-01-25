@@ -15,12 +15,12 @@ from game_stats import GameStats
 from button import Button
 from scoreboard import Scoreboard
 from phase_manager import PhaseManager
+from background_transition import BackgroundTransition
 
 # NOTE: Omega Relay version 2.2
+# FIXME: Background transition bugs -___- crossfade method is not called.
 # FIXME: AlienRailgun is not animating. 
 # FIXME: Replace AlienEyeSpawn death animation (need a big animation)
-# FIXME: New phases (6 - 10) are not moving to the next phase after all enemies have been defeated
-# FIXME: New enemy type death animations continue to move towards left side of screen
 # NOTE: Tasks:
 # Adjust phase configs for game balance
 # Add enemy firing mechanic (Basic alien and Railgun alien)
@@ -63,6 +63,10 @@ class OmegaRelay:
 
         # Initialize Phase Manager
         self.phase_manager = PhaseManager(self)
+
+        # Initialize Background Transition
+        self.background_transition = BackgroundTransition(self.screen)
+        self.transition_started = False
 
         # Instance for storing game stats.
         self.stats = GameStats(self)
@@ -108,6 +112,14 @@ class OmegaRelay:
             self.next_state = GameState.PLAYING
         elif self.state not in [GameState.PHASE_CHANGE, GameState.DANGER, GameState.GAME_OVER]:
             self.next_state = GameState.PLAYING
+
+        # Handle background transition on phase change
+        elif self.state == GameState.PHASE_CHANGE and not self.transition_started:
+            self.transition_started = True # Mark transition to prevent re-triggering
+            self.current_alpha = 0 # Initialize alpha for transition
+        # Reset transition flag once transition is complete
+        elif self.state != GameState.PHASE_CHANGE:
+            self.transition_started = False
 
         # Handle transitions
         if self.next_state:
@@ -197,11 +209,32 @@ class OmegaRelay:
         # Update the screen
         pygame.display.flip()
 
+    def handle_background_transition(self):
+        """Handles background transitions during phase change."""
+        current_bg = self.settings.backgrounds['phase_' + str(self.phase_manager.current_phase)]
+        next_bg = self.settings.backgrounds['phase_' + str(self.phase_manager.current_phase + 1)]
+
+        # self.background_transition.crossfade(current_bg, next_bg)
+
+        # Update alpha for transition
+        self.current_alpha = min(255, self.current_alpha + 5) # Increment alpha
+        current_bg.set_alpha(255 - self.current_alpha)
+        next_bg.set_alpha(self.current_alpha)
+
+        # Blit the transitioning backgrounds
+        self.screen.blit(current_bg, (0, 0))
+        self.screen.blit(next_bg, (0, 0))
+
+        if self.current_alpha >= 255:
+            # End of transition
+            self.transition_started = False
+
     def handle_phase_change(self):
         """Handle the game during a phase change."""
         # Continue to allow ship control and star rush
         self.ship.update()
         self._update_starshower()
+        self.handle_background_transition()
 
         # Initiate a delay or countdown before the next phase starts
         if not hasattr(self, "phase_change_start") or self.phase_change_start is None:
