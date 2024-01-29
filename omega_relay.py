@@ -211,19 +211,19 @@ class OmegaRelay:
 
     def handle_background_transition(self):
         """Handles background transitions during phase change."""
-        current_bg = self.settings.backgrounds['phase_' + str(self.phase_manager.current_phase)]
-        next_bg = self.settings.backgrounds['phase_' + str(self.phase_manager.current_phase + 1)]
+        # current_bg = self.settings.backgrounds['phase_' + str(self.phase_manager.current_phase)]
+        # next_bg = self.settings.backgrounds['phase_' + str(self.phase_manager.current_phase + 1)]
 
         # self.background_transition.crossfade(current_bg, next_bg)
 
         # Update alpha for transition
-        self.current_alpha = min(255, self.current_alpha + 5) # Increment alpha
-        current_bg.set_alpha(255 - self.current_alpha)
-        next_bg.set_alpha(self.current_alpha)
+        self.current_alpha = min(255, self.current_alpha + 2) # Increment alpha
+        self.current_bg.set_alpha(255 - self.current_alpha)
+        self.next_bg.set_alpha(self.current_alpha)
 
         # Blit the transitioning backgrounds
-        self.screen.blit(current_bg, (0, 0))
-        self.screen.blit(next_bg, (0, 0))
+        self.screen.blit(self.current_bg, (0, 0))
+        self.screen.blit(self.next_bg, (0, 0))
 
         if self.current_alpha >= 255:
             # End of transition
