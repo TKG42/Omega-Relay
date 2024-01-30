@@ -44,3 +44,10 @@ class Ship:
         """Draw the ship at its current location."""
         if self.visible:
             self.screen.blit(self.image, self.rect)
+        elif self.or_game.shield_powerup.active:
+            self.or_game.shield_powerup.draw_shield(self)
+
+    def activate_shield(self):
+        """handles shield activation."""
+        if self.or_game.shield_powerup and not self.or_game.shield_powerup.active:
+            self.or_game.shield_powerup.activate()

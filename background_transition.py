@@ -1,5 +1,7 @@
 import pygame
 
+# NOTE: this class is not being used. 
+
 class BackgroundTransition:
     """Class for handling background transitions between phases."""
     def __init__(self, screen, transition_duration=1000):

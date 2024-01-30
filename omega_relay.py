@@ -16,9 +16,11 @@ from button import Button
 from scoreboard import Scoreboard
 from phase_manager import PhaseManager
 from background_transition import BackgroundTransition
+from powerupshield import ShieldPowerup
 
-# NOTE: Omega Relay version 2.2
-# FIXME: Background transition bugs -___- crossfade method is not called.
+# NOTE: Omega Relay version 2.3 - BT_branch
+# FIXME FIXME FIXME: Latest version with shield powerup. DOES NOT RUN. Lots of bugs (-__-)
+# FIXME: minor background transition bugs, crossfade method is not called.
 # FIXME: AlienRailgun is not animating. 
 # FIXME: Replace AlienEyeSpawn death animation (need a big animation)
 # NOTE: Tasks:
@@ -46,7 +48,9 @@ class OmegaRelay:
         self.title_image_rect.centerx = self.screen.get_rect().centerx
         self.title_image_rect.centery = self.screen.get_rect().centery - y_difference
 
+        # Ship and powerup instantiation
         self.ship = Ship(self)
+        self.shield_powerup = ShieldPowerup(self)
 
         # Add a star every x frames
         self.star_add_interval = 5
@@ -282,6 +286,8 @@ class OmegaRelay:
             self._fire_bullet()
         elif event.key == pygame.K_n and self.state == GameState.PLAYING:   # NOTE: Switches to next phase with 'n'. Remove when done testing
             self.phase_manager.next_phase()
+        elif event.key == pygame.K_s:
+            self.ship.activate_shield()
 
     def _check_keyup_events(self, event):
         """Respond to key releases."""
@@ -531,6 +537,7 @@ class OmegaRelay:
         self.screen.blit(self.settings.background, (0, 0))
         self.stars.draw(self.screen)
         self.aliens.draw(self.screen)
+        self.shield_powerup.draw()
 
         if self.state == GameState.PLAYING or self.state == GameState.DANGER:
             self.ship.blitme() # Draw the ship in both playing and danger states
