@@ -48,6 +48,9 @@ class OmegaRelay:
         self.title_image_rect.centerx = self.screen.get_rect().centerx
         self.title_image_rect.centery = self.screen.get_rect().centery - y_difference
 
+        # Initialize Phase Manager
+        self.phase_manager = PhaseManager(self)
+
         # Ship and powerup instantiation
         self.ship = Ship(self)
         self.shield_powerup = ShieldPowerup(self)
@@ -64,9 +67,6 @@ class OmegaRelay:
         self.stars = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
         self.explosions = pygame.sprite.Group()
-
-        # Initialize Phase Manager
-        self.phase_manager = PhaseManager(self)
 
         # Initialize Background Transition
         self.background_transition = BackgroundTransition(self.screen)
