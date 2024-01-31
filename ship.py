@@ -8,6 +8,7 @@ class Ship:
         self.screen = or_game.screen
         self.settings = or_game.settings
         self.screen_rect = or_game.screen.get_rect()
+        self.or_game = or_game
 
         # Load the ship image and get its rect.
         # NOTE - important: ship images directly from the space shooter creation kit2 must have dimensions reduced to 40% - NOTE
@@ -44,7 +45,8 @@ class Ship:
         """Draw the ship at its current location."""
         if self.visible:
             self.screen.blit(self.image, self.rect)
-        elif self.or_game.shield_powerup.active:
+
+        if self.or_game.shield_powerup.active:
             self.or_game.shield_powerup.draw_shield(self)
 
     def activate_shield(self):

@@ -18,8 +18,10 @@ from phase_manager import PhaseManager
 from background_transition import BackgroundTransition
 from powerupshield import ShieldPowerup
 
-# NOTE: Omega Relay version 2.3 - BT_branch
-# FIXME FIXME FIXME: Latest version with shield powerup. DOES NOT RUN. Lots of bugs (-__-)
+# NOTE: Omega Relay version 2.4 - BT_branch
+# FIXME: Clearing all aliens at phase 8 does not move to next phase
+# FIXME: Remaining aliens on screen from phase 9 do not clear during transition to phase 10
+# FIXME: Shield cooldown does not seem to be applied during later phases 
 # FIXME: minor background transition bugs, crossfade method is not called.
 # FIXME: AlienRailgun is not animating. 
 # FIXME: Replace AlienEyeSpawn death animation (need a big animation)
@@ -399,35 +401,38 @@ class OmegaRelay:
     # Decrease HP or handle the death of the alien
         alien.hit_points -= 1
         if alien.hit_points <= 0:
-            alien.die()  # Or however you handle the death of the alien
+            alien.die()  
 
     def _handle_collision_with_AlienLarge(self, alien):
     # Decrease HP or handle the death of the alien
         alien.hit_points -= 1
         if alien.hit_points <= 0:
-            alien.die()  # Or however you handle the death of the alien
+            alien.die()  
 
     def _handle_collision_with_AlienRailgun(self, alien):
     # Decrease HP or handle the death of the alien
         alien.hit_points -= 1
         if alien.hit_points <= 0:
-            alien.die()  # Or however you handle the death of the alien
+            alien.die()  
 
     def _ship_hit(self):
         """Respond to the ship being hit by an alien."""
-        # Player lives immediately set to zero
-        self.stats.lives_left = 0
-        self.ship.visible = False # Hide the ship
-        explosion = Explosion(self.screen, self.ship.rect.center, "player")
-        self.explosions.add(explosion)
-        # Set state to game over
-        self.state = GameState.GAME_OVER
-        self._execute_current_state()
-        # Destroy existing bullets and aliens
-        self.bullets.empty()
-        self.aliens.empty()
-        # Update the screen immediately to show the explosion
-        self._update_screen()
+        if self.shield_powerup.active:
+            self.shield_powerup.take_damage()
+        else:
+            # Player lives immediately set to zero
+            self.stats.lives_left = 0
+            self.ship.visible = False # Hide the ship
+            explosion = Explosion(self.screen, self.ship.rect.center, "player")
+            self.explosions.add(explosion)
+            # Set state to game over
+            self.state = GameState.GAME_OVER
+            self._execute_current_state()
+            # Destroy existing bullets and aliens
+            self.bullets.empty()
+            self.aliens.empty()
+            # Update the screen immediately to show the explosion
+            self._update_screen()
 
     def _check_aliens_leftscreen(self):
         """Check if any aliens made it to the left side of the screen."""
@@ -475,10 +480,17 @@ class OmegaRelay:
 
         # Look for alien-ship-collisions.
         collision_aliens = pygame.sprite.spritecollide(self.ship, self.aliens, False)
-        for alien in collision_aliens:
-            if not alien.is_dying:
-                self._ship_hit()
-                break # Once a collision with a live alien is detected, handle it and exit loop
+        if collision_aliens:
+            for alien in collision_aliens:
+                if not alien.is_dying:
+                    if self.shield_powerup.active:
+                        self.shield_powerup.take_damage()
+                        alien.die()
+                        alien.update()
+                        self.aliens.remove(alien)
+                    else:
+                        self._ship_hit()
+                        break # Once a collision with a live alien is detected, handle it and exit loop
            
         # Look for aliens that have reached the left side of the screen
         self._check_aliens_leftscreen()

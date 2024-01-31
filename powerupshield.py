@@ -15,12 +15,12 @@ class ShieldPowerup:
         # Powerup stats
         self.active = False
         self.shield_strength = 3
-        self.cooldown = 30000 # Miliseconds. Test to be sure
+        self.cooldown = 10000 # Miliseconds. Test to be sure  # NOTE: 15 or 30 seconds for final implementation. 
         self.last_activation_time = 0
 
         # Powerup animation inits
-        number_of_frames = 0 # NOTE: add animation # of frames for shields here, or directly in self.animation_frames.
-        self.animation_frames = [pygame.image.load(f'images/FullShieldFrames/{i}.png') for i in range(number_of_frames)]
+        number_of_frames = 12
+        self.animation_frames = [pygame.image.load(f'images/FullShieldFrames/{i:02}.png') for i in range(number_of_frames)]
         self.current_frame = 0
         self.animation_rate = 100 # Milliseconds per frame
         self.last_update = pygame.time.get_ticks()
@@ -48,6 +48,8 @@ class ShieldPowerup:
         if self.active and (current_time - self.last_activation_time > self.cooldown * 1000):
             self.active = False
 
+        if self.active and self.shield_strength <= 0:
+            self.active = False
         # Additional update logic here
             
     def draw(self):
@@ -59,7 +61,10 @@ class ShieldPowerup:
 
     def activate(self):
         """Change shield status to active state."""
-        if not self.active and self.phase_manager.current_phase >= 3:
+        current_time = pygame.time.get_ticks()
+        if (not self.active and 
+            self.phase_manager.current_phase >= 3 and
+            (current_time - self.last_activation_time > self.cooldown)):
             self.active = True
             self.shield_strength = 3
             self.last_activation_time = pygame.time.get_ticks()
