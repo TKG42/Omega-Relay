@@ -19,7 +19,7 @@ from background_transition import BackgroundTransition
 from powerupshield import ShieldPowerup
 
 # NOTE: Omega Relay version 2.4 - BT_branch
-# FIXME: Aliens may not be getting counted when they are destroyed via a shield, leading to a phase locking up. 
+# FIXME: (Fixed) Aliens may not be getting counted when they are destroyed via a shield, leading to a phase locking up. 
 # FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
 # FIXME: minor background transition bugs, crossfade method is not called.
 # FIXME: AlienRailgun is not animating. 
@@ -484,6 +484,7 @@ class OmegaRelay:
                 if not alien.is_dying:
                     if self.shield_powerup.active:
                         self.shield_powerup.take_damage()
+                        self.handle_alien_defeat()
                         alien.die()
                         alien.update()
                         self.aliens.remove(alien)
