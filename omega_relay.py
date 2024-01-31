@@ -19,9 +19,8 @@ from background_transition import BackgroundTransition
 from powerupshield import ShieldPowerup
 
 # NOTE: Omega Relay version 2.4 - BT_branch
-# FIXME: Clearing all aliens at phase 8 does not move to next phase
-# FIXME: Remaining aliens on screen from phase 9 do not clear during transition to phase 10
-# FIXME: Shield cooldown does not seem to be applied during later phases 
+# FIXME: Aliens may not be getting counted when they are destroyed via a shield, leading to a phase locking up. 
+# FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
 # FIXME: minor background transition bugs, crossfade method is not called.
 # FIXME: AlienRailgun is not animating. 
 # FIXME: Replace AlienEyeSpawn death animation (need a big animation)
