@@ -17,9 +17,11 @@ from scoreboard import Scoreboard
 from phase_manager import PhaseManager
 from background_transition import BackgroundTransition
 from powerupshield import ShieldPowerup
+from powershot import PowerShot
 
-# NOTE: Omega Relay version 2.4 - BT_branch
-# FIXME: (Fixed) Aliens may not be getting counted when they are destroyed via a shield, leading to a phase locking up. 
+# NOTE: Omega Relay version 2.5 - BT_branch
+# NOTE: Using spacebar with 'F' and 'S' does not physically feel good for gameplay. May want to change to a more unified key binding. 
+# FIXME: Garbage performance. Might need to eliminate splash damage from Powershot, or search for some way to improve pygames performance. 
 # FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
 # FIXME: minor background transition bugs, crossfade method is not called.
 # FIXME: AlienRailgun is not animating. 
@@ -27,7 +29,6 @@ from powerupshield import ShieldPowerup
 # NOTE: Tasks:
 # Adjust phase configs for game balance
 # Add enemy firing mechanic (Basic alien and Railgun alien)
-# Add player muzzle flash animation
 # implement unique AlienRailgun behavior. 
 
 class OmegaRelay:
@@ -68,6 +69,7 @@ class OmegaRelay:
         self.stars = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
         self.explosions = pygame.sprite.Group()
+        self.power_shots = pygame.sprite.Group()
 
         # Initialize Background Transition
         self.background_transition = BackgroundTransition(self.screen)
@@ -289,6 +291,8 @@ class OmegaRelay:
             self.phase_manager.next_phase()
         elif event.key == pygame.K_s:
             self.ship.activate_shield()
+        elif event.key == pygame.K_f and self.phase_manager.current_phase >= 5:
+            self._fire_power_shot()
 
     def _check_keyup_events(self, event):
         """Respond to key releases."""
@@ -353,10 +357,37 @@ class OmegaRelay:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
 
+    def _fire_power_shot(self):
+        """Create a new splash damage power shot and add to power shots group."""
+        if len(self.power_shots) < self.settings.power_shots_allowed:
+            ship_pos = self.ship.rect.midright
+            new_power_shot = PowerShot(self, ship_pos)
+            self.power_shots.add(new_power_shot)
+
+    def _apply_splash_damage(self, impact_center):
+        """Apply AOE splash damage to aliens within the radius of the impact."""
+        impact_pos = pygame.Vector2(impact_center) # Convert to Vector2 for distance calculation
+        for alien in self.aliens:
+            alien_pos = pygame.Vector2(alien.rect.center)
+            if alien_pos.distance_to(impact_pos) <= self.settings.power_shot_splash_radius:
+                alien.hit_points -= self.settings.power_shot_splash_damage
+                if alien.hit_points <= 0:
+                    alien.die()
+                    self.aliens.remove(alien)
+                    self.handle_alien_defeat()
+                    explosion = Explosion(self.screen, alien.rect.center, "power_shot")
+                    self.explosions.add(explosion)
+            
     def _update_bullets(self):
         """Update position of bullets and get rid of old bullets."""
         # Update bullet positions.
         self.bullets.update()
+        self.power_shots.update()
+
+        # Get rid of power shots that have disappeared or collided
+        for power_shot in self.power_shots.copy():
+            if power_shot.rect.left >= self.settings.screen_width:
+                self.power_shots.remove(power_shot)
 
         # Get rid of bullets that have disappeared or gone off of the right edge.
         for bullet in self.bullets.copy():
@@ -369,8 +400,10 @@ class OmegaRelay:
         """Respond to bullet-alien collisions."""
         # Remove any bullets and aliens that have collided.
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, False)
+        power_shot_collisions = pygame.sprite.groupcollide(self.power_shots, self.aliens, True, False)
         # Change self.bullets boolean pair to False for super bullets that rip through (good for testing)
 
+        # Regular Alien collisions
         for aliens in collisions.values():
             for alien in aliens:
                 alien.hit_points -= 1
@@ -381,6 +414,7 @@ class OmegaRelay:
                     # NOTE debugging
                     print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
   
+        # Hard alien collisions
         for bullet in collisions:
             for alien in collisions[bullet]:
                 if not alien.is_dying: # Only consider aliens that are not dying
@@ -392,6 +426,15 @@ class OmegaRelay:
                     elif isinstance(alien, AlienRailgun):
                         self._handle_collision_with_AlienRailgun(alien)
           
+        # Power shot collisions
+        for power_shot in power_shot_collisions:
+            for alien in power_shot_collisions[power_shot]:
+                # Create an explosion at the point of impact
+                explosion = Explosion(self.screen, alien.rect.center, "power_shot")
+                self.explosions.add(explosion)
+                # Apply splash damage from the point of impact
+                self._apply_splash_damage(alien.rect.center)
+
         if not self.aliens:
             # Destroy existing bullets
             self.bullets.empty()
@@ -559,6 +602,8 @@ class OmegaRelay:
         if self.state in [GameState.PLAYING, GameState.DANGER]:
             for bullet in self.bullets.sprites():
                 bullet.draw_bullet()
+            for power_shot in self.power_shots.sprites():
+                power_shot.draw()
 
         self.explosions.update()
         self.explosions.draw(self.screen)

@@ -25,6 +25,9 @@ class Explosion(Sprite):
         elif self.explosion_type == "player":
             self.explosion_frames = 16
             self.base_path = 'images/explosion2_0/'
+        elif self.explosion_type == "power_shot":
+            self.explosion_frames = 15
+            self.base_path = 'images/PowerShotExplosionFrames/'
         # NOTE: Add more conditions here for other types of explosion if needed
 
     def load_images(self):
