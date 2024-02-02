@@ -23,7 +23,7 @@ from powershot import PowerShot
 # NOTE: Using spacebar with 'F' and 'S' does not physically feel good for gameplay. May want to change to a more unified key binding. 
 # FIXME: Garbage performance. Might need to eliminate splash damage from Powershot, or search for some way to improve pygames performance. 
 # FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
-# FIXME: minor background transition bugs, crossfade method is not called.
+# FIXME: minor background transition bugs. Crossfade method is called now, but transitions are slow and there is an initial flash.
 # FIXME: AlienRailgun is not animating. 
 # FIXME: Replace AlienEyeSpawn death animation (need a big animation)
 # NOTE: Tasks:
@@ -72,8 +72,7 @@ class OmegaRelay:
         self.power_shots = pygame.sprite.Group()
 
         # Initialize Background Transition
-        self.background_transition = BackgroundTransition(self.screen)
-        self.transition_started = False
+        self.background_transition = BackgroundTransition(self)
 
         # Instance for storing game stats.
         self.stats = GameStats(self)
@@ -121,12 +120,12 @@ class OmegaRelay:
             self.next_state = GameState.PLAYING
 
         # Handle background transition on phase change
-        elif self.state == GameState.PHASE_CHANGE and not self.transition_started:
-            self.transition_started = True # Mark transition to prevent re-triggering
-            self.current_alpha = 0 # Initialize alpha for transition
+        elif self.state == GameState.PHASE_CHANGE and not self.background_transition.started:
+            self.background_transition.started = True # Mark transition to prevent re-triggering
+            self.background_transition.alpha = 0 # Initialize alpha for transition
         # Reset transition flag once transition is complete
         elif self.state != GameState.PHASE_CHANGE:
-            self.transition_started = False
+            self.background_transition.started = False
 
         # Handle transitions
         if self.next_state:
@@ -216,32 +215,12 @@ class OmegaRelay:
         # Update the screen
         pygame.display.flip()
 
-    def handle_background_transition(self):
-        """Handles background transitions during phase change."""
-        # current_bg = self.settings.backgrounds['phase_' + str(self.phase_manager.current_phase)]
-        # next_bg = self.settings.backgrounds['phase_' + str(self.phase_manager.current_phase + 1)]
-
-        # self.background_transition.crossfade(current_bg, next_bg)
-
-        # Update alpha for transition
-        self.current_alpha = min(255, self.current_alpha + 2) # Increment alpha
-        self.current_bg.set_alpha(255 - self.current_alpha)
-        self.next_bg.set_alpha(self.current_alpha)
-
-        # Blit the transitioning backgrounds
-        self.screen.blit(self.current_bg, (0, 0))
-        self.screen.blit(self.next_bg, (0, 0))
-
-        if self.current_alpha >= 255:
-            # End of transition
-            self.transition_started = False
-
     def handle_phase_change(self):
         """Handle the game during a phase change."""
         # Continue to allow ship control and star rush
         self.ship.update()
         self._update_starshower()
-        self.handle_background_transition()
+        self.background_transition.crossfade()
 
         # Initiate a delay or countdown before the next phase starts
         if not hasattr(self, "phase_change_start") or self.phase_change_start is None:

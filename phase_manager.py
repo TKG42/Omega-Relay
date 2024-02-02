@@ -36,10 +36,10 @@ class PhaseManager:
         if self.current_phase < self.total_phases:
 
             # Set the background before updating to the new phase level
-            self.game.current_alpha = 0
-            self.game.current_bg = self.game.settings.backgrounds['phase_' + str(self.current_phase)]
-            self.game.next_bg = self.game.settings.backgrounds['phase_' + str(self.current_phase + 1)]
-            self.game.transition_started = True
+            self.game.background_transition.alpha = 0 # Reset alpha
+            self.game.background_transition.current_bg = self.game.settings.backgrounds['phase_' + str(self.current_phase)]
+            self.game.background_transition.next_bg = self.game.settings.backgrounds['phase_' + str(self.current_phase + 1)]
+            self.game.background_transition.started = True
 
             # Increment the phase level
             self.current_phase += 1
