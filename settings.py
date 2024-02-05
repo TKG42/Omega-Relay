@@ -39,7 +39,7 @@ class Settings:
         self.power_shot_speed = 12
         self.power_shot_damage = 7
         self.power_shots_allowed = 3
-        self.power_shot_splash_radius = 200
+        self.power_shot_splash_radius = 300
         self.power_shot_splash_damage = 3
 
         # Bullet settings

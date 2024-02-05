@@ -26,7 +26,7 @@ class Explosion(Sprite):
             self.explosion_frames = 16
             self.base_path = 'images/explosion2_0/'
         elif self.explosion_type == "power_shot":
-            self.explosion_frames = 15
+            self.explosion_frames = 6
             self.base_path = 'images/PowerShotExplosionFrames/'
         # NOTE: Add more conditions here for other types of explosion if needed
 
@@ -37,7 +37,9 @@ class Explosion(Sprite):
             # Constructing file name: tile000.png, tile001.png, ... , tile011.png
             file_name = f'{self.base_path}tile00{i}.png' if i < 10 else f'{self.base_path}tile0{i}.png'
             img = pygame.image.load(file_name).convert_alpha()
-            img = pygame.transform.scale(img, (230, 230)) # Scale if necessary
+            # Scale images based on explosion type
+            if self.explosion_type in ["alien", "player"]:
+                img = pygame.transform.scale(img, (230, 230)) # Scale if necessary
             self.images.append(img)
 
     def update(self):
@@ -50,3 +52,4 @@ class Explosion(Sprite):
                 self.kill() # End the animation and remove the sprite
             else:
                 self.image = self.images[self.index] # Set the next image
+                self.rect = self.image.get_rect(center=self.rect.center)

@@ -19,9 +19,8 @@ from background_transition import BackgroundTransition
 from powerupshield import ShieldPowerup
 from powershot import PowerShot
 
-# NOTE: Omega Relay version 2.5 - BT_branch
-# NOTE: Using spacebar with 'F' and 'S' does not physically feel good for gameplay. May want to change to a more unified key binding. 
-# FIXME: Garbage performance. Might need to eliminate splash damage from Powershot, or search for some way to improve pygames performance. 
+# NOTE: Omega Relay version 2.6 - BT_branch
+# NOTE: Using spacebar with 'F' and 'S' does not physically feel good for gameplay. May want to change to a more unified key binding.   
 # FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
 # FIXME: minor background transition bugs. Crossfade method is called now, but transitions are slow and there is an initial flash.
 # FIXME: AlienRailgun is not animating. 
