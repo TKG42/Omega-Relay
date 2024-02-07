@@ -18,13 +18,16 @@ from phase_manager import PhaseManager
 from background_transition import BackgroundTransition
 from powerupshield import ShieldPowerup
 from powershot import PowerShot
+from alien_bullet import AlienBullet
 
+
+# FIXME FIXME FIXME ----- Does not run ----- FIXME FIXME FIXME
 # NOTE: Omega Relay version 2.6 - BT_branch
 # NOTE: Using spacebar with 'F' and 'S' does not physically feel good for gameplay. May want to change to a more unified key binding.   
 # FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
 # FIXME: minor background transition bugs. Crossfade method is called now, but transitions are slow and there is an initial flash.
 # FIXME: AlienRailgun is not animating. 
-# FIXME: Replace AlienEyeSpawn death animation (need a big animation)
+# FIXME: AlienEyeSpawn death animation only appearing sometimes. 
 # NOTE: Tasks:
 # Adjust phase configs for game balance
 # Add enemy firing mechanic (Basic alien and Railgun alien)
@@ -65,6 +68,7 @@ class OmegaRelay:
         self.frame_counter2 = 0
 
         self.bullets = pygame.sprite.Group()
+        self.alien_bullets = pygame.sprite.Group()
         self.stars = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
         self.explosions = pygame.sprite.Group()
@@ -335,6 +339,11 @@ class OmegaRelay:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
 
+    def _fire_alien_bullet(self, alien):
+        """Fire a bullet from a Rail gun enemy."""
+        new_bullet = AlienBullet(alien)
+        self.alien_bullets.add(new_bullet)
+
     def _fire_power_shot(self):
         """Create a new splash damage power shot and add to power shots group."""
         if len(self.power_shots) < self.settings.power_shots_allowed:
@@ -361,6 +370,7 @@ class OmegaRelay:
         # Update bullet positions.
         self.bullets.update()
         self.power_shots.update()
+        self.alien_bullets.update()
 
         # Get rid of power shots that have disappeared or collided
         for power_shot in self.power_shots.copy():
@@ -498,6 +508,11 @@ class OmegaRelay:
         if self.frame_counter2 == 0:
             self._create_new_column_of_aliens()
 
+        # Handle AlienRalgun firing
+        for alien in self.aliens.sprites():
+            if isinstance(alien, AlienRailgun) and alien.has_stopped:
+                self._fire_alien_bullet(alien)
+
         # Look for alien-ship-collisions.
         collision_aliens = pygame.sprite.spritecollide(self.ship, self.aliens, False)
         if collision_aliens:
@@ -540,7 +555,12 @@ class OmegaRelay:
     def _alien_rush(self):
         """Cause all Aliens to rush from the right side of the screen to the left."""
         for alien in self.aliens.sprites():
-            if alien.alive:
+            if isinstance(alien, AlienRailgun):
+                if not alien.has_stopped:
+                    alien.rect.x -= alien.speed
+                    if alien.rect.x <= self.settings.screen_width * 0.8:  # Adjust value for Alien Railgun stopping point
+                        alien.has_stopped = True
+            elif alien.alive:
                 alien.rect.x -= alien.speed
 
     def _create_alien(self, alien_class):
@@ -582,6 +602,10 @@ class OmegaRelay:
                 bullet.draw_bullet()
             for power_shot in self.power_shots.sprites():
                 power_shot.draw()
+            for alien_bullet in self.alien_bullets.sprites():
+                alien_bullet.draw()
+
+
 
         self.explosions.update()
         self.explosions.draw(self.screen)

@@ -13,7 +13,7 @@ class AlienEyeSpawn(Sprite):
 
         # Load animation frames
         self.idle_frames = self.load_animation_frames('images/alien_eyespawn/tile', frame_count=4) 
-        self.death_frames = self.load_animation_frames('images/alien_eyespawn_death/tile', frame_count=25) 
+        self.death_frames = self.load_animation_frames('images/alien_eyespawn_death/tile', frame_count=5) 
 
         # Set the initial animation state
         self.animation_frames = self.idle_frames

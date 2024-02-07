@@ -38,6 +38,9 @@ class AlienRailgun(Sprite):
         # Speed
         self.speed = randint(*self.settings.alien_speed_range)
 
+        # Flag for checking if alien has stopped moving
+        self.has_stopped = False
+
         # HP
         self.hit_points = 13
 
@@ -61,6 +64,8 @@ class AlienRailgun(Sprite):
     def fire(self):
         """Handle firing behavior and animation."""
         # Switch to firing animation
+        if not self.has_stopped:
+            return
         self.animation_frames = self.firing_frames
         self.frame_index = 0
 
@@ -84,6 +89,10 @@ class AlienRailgun(Sprite):
             self.x -= self.speed
             self.rect.x = self.x
 
+        if self.alive and not self.has_stopped:
+            if self.rect.x <= self.settings.screen_width * 0.8:  # change as needed
+                self.has_stopped = True
+
         # Update animation
         now = pygame.time.get_ticks()
         if now - self.last_update > self.frame_rate:
@@ -96,5 +105,5 @@ class AlienRailgun(Sprite):
                 self.or_game.handle_alien_defeat()
 
         # If the alien has halted and is alive, start firing
-        if self.rect.x < self.settings.screen_width * 0.8 and self.alive:
+        if self.has_stopped and self.alive:
             self.fire()
