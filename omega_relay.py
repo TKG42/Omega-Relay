@@ -20,14 +20,14 @@ from powerupshield import ShieldPowerup
 from powershot import PowerShot
 from alien_bullet import AlienBullet
 
-
-# FIXME FIXME FIXME ----- Does not run ----- FIXME FIXME FIXME
-# NOTE: Omega Relay version 2.6 - BT_branch
-# NOTE: Using spacebar with 'F' and 'S' does not physically feel good for gameplay. May want to change to a more unified key binding.   
+# NOTE: Omega Relay version 2.6 - BT_branch  
+# FIXME: AlienRailgun fails to animate (all three animations)
+# FIXME: AlienRailGun projectile creates buggy trail
+# FIXME: ALienRailGun fails to stop moving. (continues across screen like other enemies)
 # FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
 # FIXME: minor background transition bugs. Crossfade method is called now, but transitions are slow and there is an initial flash.
-# FIXME: AlienRailgun is not animating. 
 # FIXME: AlienEyeSpawn death animation only appearing sometimes. 
+# NOTE: Using spacebar with 'F' and 'S' does not physically feel good for gameplay. May want to change to a more unified key binding. 
 # NOTE: Tasks:
 # Adjust phase configs for game balance
 # Add enemy firing mechanic (Basic alien and Railgun alien)
@@ -382,6 +382,11 @@ class OmegaRelay:
             if bullet.rect.bottom <= 0 or bullet.rect.right >= self.settings.screen_width:
                 self.bullets.remove(bullet)
 
+        # Get rid of alien bullets
+        for bullet in self.alien_bullets.copy():
+            if bullet.rect.right < 0:
+                self.alien_bullets.remove(bullet)
+
         self._check_bullet_alien_collisions()
 
     def _check_bullet_alien_collisions(self):
@@ -558,9 +563,9 @@ class OmegaRelay:
             if isinstance(alien, AlienRailgun):
                 if not alien.has_stopped:
                     alien.rect.x -= alien.speed
-                    if alien.rect.x <= self.settings.screen_width * 0.8:  # Adjust value for Alien Railgun stopping point
+                    if alien.rect.x <= self.settings.screen_width * 0.5:  # Adjust value for Alien Railgun stopping point
                         alien.has_stopped = True
-            elif alien.alive:
+            else:
                 alien.rect.x -= alien.speed
 
     def _create_alien(self, alien_class):

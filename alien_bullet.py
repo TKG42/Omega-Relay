@@ -8,12 +8,16 @@ class AlienBullet(Sprite):
         super().__init__()
         self.screen = alien.or_game.screen
         self.settings = alien.or_game.settings
-        self.load_animation_frames('images/alien_railgun_bullet/', frame_count=8) # Adjust frame count to correct amount
+        self.load_animation_frames('images/alien_railgun_bullet/tile', frame_count=8) # Adjust frame count to correct amount
         self.animation_frames = self.idle_frames
         self.frame_index = 0
         self.image = self.animation_frames[self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.midleft = alien.rect.midleft
+
+        # Initialize animation timing
+        self.last_update = pygame.time.get_ticks()
+        self.frame_rate = 100 # Adjust this value as needed for the animation speed. 
 
         self.x = float(self.rect.x)
         self.y = float(self.rect.y)
