@@ -36,7 +36,7 @@ class AlienRailgun(Sprite):
         self.x = float(self.rect.x)
 
         # Speed
-        self.speed = randint(*self.settings.alien_speed_range)
+        self.speed = 3
 
         # Flag for checking if alien has stopped moving
         self.has_stopped = False
@@ -85,12 +85,11 @@ class AlienRailgun(Sprite):
     def update(self):
         """Update the alien's position and animation."""
         # Update position
-        if self.alive:
+        if self.alive and not self.has_stopped:
             self.x -= self.speed
             self.rect.x = self.x
 
-        if self.alive and not self.has_stopped:
-            if self.rect.x <= self.settings.screen_width * 0.8:  # change as needed
+            if self.rect.x <= self.settings.screen_width * 0.7:  # change as needed
                 self.has_stopped = True
 
         # Update animation

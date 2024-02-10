@@ -562,9 +562,7 @@ class OmegaRelay:
         for alien in self.aliens.sprites():
             if isinstance(alien, AlienRailgun):
                 if not alien.has_stopped:
-                    alien.rect.x -= alien.speed
-                    if alien.rect.x <= self.settings.screen_width * 0.5:  # Adjust value for Alien Railgun stopping point
-                        alien.has_stopped = True
+                    alien.update()
             else:
                 alien.rect.x -= alien.speed
 

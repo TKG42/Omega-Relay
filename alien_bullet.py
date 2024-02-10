@@ -14,6 +14,7 @@ class AlienBullet(Sprite):
         self.image = self.animation_frames[self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.midleft = alien.rect.midleft
+        self.alien = alien
 
         # Initialize animation timing
         self.last_update = pygame.time.get_ticks()
@@ -32,7 +33,7 @@ class AlienBullet(Sprite):
 
     def update(self):
         """Move the bullet across the screen."""
-        self.x -= self.settings.alien_bullet_speed
+        self.x -= self.settings.alien_bullet_speed + self.alien.speed
         self.rect.x = self.x
         self._animate()
 
