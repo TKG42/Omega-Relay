@@ -20,18 +20,13 @@ from powerupshield import ShieldPowerup
 from powershot import PowerShot
 from alien_bullet import AlienBullet
 
-# NOTE: Omega Relay version 2.6 - BT_branch  
-# FIXME: AlienRailgun fails to animate (all three animations)
+# NOTE: Omega Relay version 2.6 - main
+# FIXME: AlienRailgun fails to animate (firing and death)
 # FIXME: AlienRailGun projectile creates buggy trail
-# FIXME: ALienRailGun fails to stop moving. (continues across screen like other enemies)
-# FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
-# FIXME: minor background transition bugs. Crossfade method is called now, but transitions are slow and there is an initial flash.
 # FIXME: AlienEyeSpawn death animation only appearing sometimes. 
+# FIXME: New aliens (Large alien, alien eye spawn) death animations continue moving instead of halting and animating at the place of death. 
+# FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
 # NOTE: Using spacebar with 'F' and 'S' does not physically feel good for gameplay. May want to change to a more unified key binding. 
-# NOTE: Tasks:
-# Adjust phase configs for game balance
-# Add enemy firing mechanic (Basic alien and Railgun alien)
-# implement unique AlienRailgun behavior. 
 
 class OmegaRelay:
     """Overall class to manage game assets and behavior."""

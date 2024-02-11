@@ -6,8 +6,6 @@ import pygame
 # Instead, this alien spawns from the right side of the screen like other enemy types, but it only moves a few paces forward before halting
 # Then it fires at the player continuosly from its position until its killed. 
 
-# NOTE: this class needs a method to handle the firing animation.
-
 class AlienRailgun(Sprite):
     """Class representing large, powerful railgun enemy."""
     def __init__(self, or_game):
