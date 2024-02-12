@@ -498,7 +498,6 @@ class OmegaRelay:
     def _update_aliens(self):
         """Update the position of all aliens."""
         self.aliens.update()
-        self._alien_rush()
         # Remove any aliens that have moved to the edge of the left side screen
         for alien in self.aliens.copy():
             if alien.rect.right < 0:
@@ -550,15 +549,6 @@ class OmegaRelay:
                     self._create_alien(AlienRailgun)
                 self.phase_manager.aliens_spawned_this_phase += 1 # Increment the counter
 
-    def _alien_rush(self):
-        """Cause all Aliens to rush from the right side of the screen to the left."""
-        for alien in self.aliens.sprites():
-            if isinstance(alien, AlienRailgun):
-                if not alien.has_stopped:
-                    alien.update()
-            else:
-                alien.rect.x -= alien.speed
-
     def _create_alien(self, alien_class):
         """Create an alien and place it in the column."""
         alien = alien_class(self)
@@ -600,8 +590,6 @@ class OmegaRelay:
                 power_shot.draw()
             for alien_bullet in self.alien_bullets.sprites():
                 alien_bullet.draw()
-
-
 
         self.explosions.update()
         self.explosions.draw(self.screen)

@@ -62,10 +62,9 @@ class AlienRailgun(Sprite):
     def fire(self):
         """Handle firing behavior and animation."""
         # Switch to firing animation
-        if not self.has_stopped:
-            return
-        self.animation_frames = self.firing_frames
-        self.frame_index = 0
+        if self.has_stopped:
+            self.animation_frames = self.firing_frames
+            self.frame_index = 0
 
         # NOTE Implemenet firing logic
         # This could involve creating bullets or other projectiles
@@ -87,8 +86,10 @@ class AlienRailgun(Sprite):
             self.x -= self.speed
             self.rect.x = self.x
 
+            # Stop moving and start firing
             if self.rect.x <= self.settings.screen_width * 0.7:  # change as needed
                 self.has_stopped = True
+                self.fire()
 
         # Update animation
         now = pygame.time.get_ticks()
@@ -100,7 +101,3 @@ class AlienRailgun(Sprite):
             if not self.alive and self.frame_index == len(self.death_frames) - 1:
                 self.kill() # Remove the sprite after the death animation.
                 self.or_game.handle_alien_defeat()
-
-        # If the alien has halted and is alive, start firing
-        if self.has_stopped and self.alive:
-            self.fire()
