@@ -77,4 +77,5 @@ class AlienLarge(Sprite):
 
             if not self.alive and self.frame_index == len(self.death_frames) - 1:
                 self.kill() # Remove the sprite after the death animation.
+                self.or_game.aliens.remove(self)
                 self.or_game.handle_alien_defeat()

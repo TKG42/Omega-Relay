@@ -346,6 +346,10 @@ class OmegaRelay:
             new_power_shot = PowerShot(self, ship_pos)
             self.power_shots.add(new_power_shot)
 
+    def _alien_death(self, alien):
+        alien.die()
+        alien.update()
+
     def _apply_splash_damage(self, impact_center):
         """Apply AOE splash damage to aliens within the radius of the impact."""
         impact_pos = pygame.Vector2(impact_center) # Convert to Vector2 for distance calculation
@@ -354,9 +358,7 @@ class OmegaRelay:
             if alien_pos.distance_to(impact_pos) <= self.settings.power_shot_splash_radius:
                 alien.hit_points -= self.settings.power_shot_splash_damage
                 if alien.hit_points <= 0:
-                    alien.die()
-                    self.aliens.remove(alien)
-                    self.handle_alien_defeat()
+                    self._alien_death(alien)
                     explosion = Explosion(self.screen, alien.rect.center, "power_shot")
                     self.explosions.add(explosion)
             
@@ -396,9 +398,7 @@ class OmegaRelay:
             for alien in aliens:
                 alien.hit_points -= 1
                 if alien.hit_points <= 0 and alien.alive:
-                    alien.die()
-                    self.aliens.remove(alien)
-                    self.handle_alien_defeat()
+                    self._alien_death(alien)
                     # NOTE debugging
                     print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
   
@@ -431,19 +431,19 @@ class OmegaRelay:
     # Decrease HP or handle the death of the alien
         alien.hit_points -= 1
         if alien.hit_points <= 0:
-            alien.die()  
+            self._alien_death(alien)
 
     def _handle_collision_with_AlienLarge(self, alien):
     # Decrease HP or handle the death of the alien
         alien.hit_points -= 1
         if alien.hit_points <= 0:
-            alien.die()  
+            self._alien_death(alien)
 
     def _handle_collision_with_AlienRailgun(self, alien):
     # Decrease HP or handle the death of the alien
         alien.hit_points -= 1
         if alien.hit_points <= 0:
-            alien.die()  
+            self._alien_death(alien)
 
     def _ship_hit(self):
         """Respond to the ship being hit by an alien."""
@@ -520,10 +520,7 @@ class OmegaRelay:
                 if not alien.is_dying:
                     if self.shield_powerup.active:
                         self.shield_powerup.take_damage()
-                        self.handle_alien_defeat()
-                        alien.die()
-                        alien.update()
-                        self.aliens.remove(alien)
+                        self._alien_death(alien)
                     else:
                         self._ship_hit()
                         break # Once a collision with a live alien is detected, handle it and exit loop
