@@ -349,6 +349,7 @@ class OmegaRelay:
     def _alien_death(self, alien):
         alien.die()
         alien.update()
+        self.handle_alien_defeat()
 
     def _apply_splash_damage(self, impact_center):
         """Apply AOE splash damage to aliens within the radius of the impact."""
