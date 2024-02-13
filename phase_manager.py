@@ -33,6 +33,11 @@ class PhaseManager:
 
     def next_phase(self):
         """Transition to the next phase if there are remaining phases."""
+        # Clear out old aliens and bullets to prepare for new phase
+        self.game.aliens.empty()
+        self.game.bullets.empty()
+        self.game.alien_bullets.empty()
+
         if self.current_phase < self.total_phases:
 
             # Set the background before updating to the new phase level
@@ -43,10 +48,6 @@ class PhaseManager:
 
             # Increment the phase level
             self.current_phase += 1
-
-            # Clear out old aliens and bullets to prepare for new phase
-            self.game.aliens.empty()
-            self.game.bullets.empty()
 
             # Draw phase level message
             self.game.sb.show_phase_level(self.current_phase)
