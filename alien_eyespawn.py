@@ -28,6 +28,7 @@ class AlienEyeSpawn(Sprite):
 
         # Store the alien's exact horizontal position
         self.x = float(self.rect.x)
+        self.y = float(self.rect.y)
 
         # Speed
         # self.speed = randint(*self.settings.alien_speed_range)
@@ -60,6 +61,14 @@ class AlienEyeSpawn(Sprite):
             self.animation_frames = self.death_frames
             self.frame_index = 0
             self.alive = False
+            # Switch to the new image
+            self.image = self.animation_frames[self.frame_index]
+            self.rect = self.image.get_rect()
+            # Update the position of the death animation
+            self.x -= 240
+            self.y -= 75
+            self.rect.x = self.x
+            self.rect.y = self.y
             # Do not call self.kill() here; let the update method handle it
 
     def update(self):
