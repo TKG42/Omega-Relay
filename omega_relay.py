@@ -21,10 +21,8 @@ from powershot import PowerShot
 from alien_bullet import AlienBullet
 
 # NOTE: Omega Relay version 2.6 - main
-# FIXME: AlienRailgun fails to animate (firing and death)
-# FIXME: AlienRailGun projectile creates buggy trail
-# FIXME: AlienEyeSpawn death animation only appearing sometimes. 
-# FIXME: New aliens (Large alien, alien eye spawn) death animations continue moving instead of halting and animating at the place of death. 
+# FIXME: Fix white background on AlienRailgun death frames
+# FIXME: Align Alien eyespawn death animation with eyeball rect (try midleft or topleft (+ or - pixels) of alieneyespawn rect)
 # FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
 # NOTE: Using spacebar with 'F' and 'S' does not physically feel good for gameplay. May want to change to a more unified key binding. 
 
