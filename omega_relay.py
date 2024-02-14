@@ -19,8 +19,13 @@ from background_transition import BackgroundTransition
 from powerupshield import ShieldPowerup
 from powershot import PowerShot
 from alien_bullet import AlienBullet
+from hpup import HpUp
 
-# NOTE: Omega Relay version 2.6 - main
+# NOTE: Omega Relay version 2.7 main
+# FIXME: ALienRailGun bullet spamming needs to be fixed. Enemy should fire shots in 2 second intervals. Needs to sync with firing animation.
+# FIXME: AlienRailGun bullet positions need alignment with Railgun arms
+# FIXME: Ship collision with AlienRailgun bullet causes instant death. Chip damage is not working correctly
+# FIXME: AlienRailGun lighting projectiles sizes should be scaled down by around 20%
 # FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
 # NOTE: Using spacebar with 'F' and 'S' does not physically feel good for gameplay. May want to change to a more unified key binding. 
 
@@ -64,6 +69,7 @@ class OmegaRelay:
         self.aliens = pygame.sprite.Group()
         self.explosions = pygame.sprite.Group()
         self.power_shots = pygame.sprite.Group()
+        self.hpups = pygame.sprite.Group()
 
         # Initialize Background Transition
         self.background_transition = BackgroundTransition(self)
@@ -142,6 +148,8 @@ class OmegaRelay:
     def playing_state(self): 
         """Handle all playing logic, updating the ship, stars, bullets, etc."""
         self.ship.update()
+        self.hpups.update()
+        self._check_bullet_player_collisions()
         self._update_starshower()
         self._update_bullets()
         self._update_aliens()
@@ -332,8 +340,17 @@ class OmegaRelay:
 
     def _fire_alien_bullet(self, alien):
         """Fire a bullet from a Rail gun enemy."""
-        new_bullet = AlienBullet(alien)
-        self.alien_bullets.add(new_bullet)
+        # Determine the positions for firing bullets
+        top_arm_position = alien.rect.topleft 
+        bottom_arm_position = alien.rect.bottomleft 
+
+        # Create bullets for each arm
+        top_bullet = AlienBullet(alien, top_arm_position)
+        bottom_bullet = AlienBullet(alien, bottom_arm_position)
+ 
+        # Add the bullets to the alien_bullets group
+        self.alien_bullets.add(top_bullet)
+        self.alien_bullets.add(bottom_bullet)
 
     def _fire_power_shot(self):
         """Create a new splash damage power shot and add to power shots group."""
@@ -346,6 +363,16 @@ class OmegaRelay:
         alien.die()
         alien.update()
         self.handle_alien_defeat()
+
+        if not self.phase_manager.hpup_spawned:
+            if isinstance(alien, Alien) or isinstance(alien, AlienRailgun):
+                if random.random() < 0.05: # 5% spawn chance. Change to 0.10 for 10% etc.
+                    self.spawn_hpup(alien.rect.center)
+                    self.phase_manager.hpup_spawned = True
+
+    def spawn_hpup(self, position):
+        hpup = HpUp(self, position)
+        self.hpups.add(hpup)
 
     def _apply_splash_damage(self, impact_center):
         """Apply AOE splash damage to aliens within the radius of the impact."""
@@ -382,6 +409,13 @@ class OmegaRelay:
                 self.alien_bullets.remove(bullet)
 
         self._check_bullet_alien_collisions()
+
+    def _check_bullet_player_collisions(self):
+        """Check for collisions between AlienBullets and the player."""
+        collisions = pygame.sprite.spritecollide(self.ship, self.alien_bullets, False)
+        for bullet in collisions:
+            # Handle chip damage here
+            self.ship.take_damage() 
 
     def _check_bullet_alien_collisions(self):
         """Respond to bullet-alien collisions."""
@@ -509,6 +543,11 @@ class OmegaRelay:
             if isinstance(alien, AlienRailgun) and alien.has_stopped:
                 self._fire_alien_bullet(alien)
 
+        # Check for collision with HpUp
+        if pygame.sprite.spritecollide(self.ship, self.hpups, True):
+            self.stats.lives_left += 1 # Increase player life
+            self.sb.prep_lives() # Update the HUD
+
         # Look for alien-ship-collisions.
         collision_aliens = pygame.sprite.spritecollide(self.ship, self.aliens, False)
         if collision_aliens:
@@ -573,6 +612,8 @@ class OmegaRelay:
         self.stars.draw(self.screen)
         self.aliens.draw(self.screen)
         self.shield_powerup.draw()
+        self.hpups.update()
+        self.hpups.draw(self.screen)
 
         if self.state == GameState.PLAYING or self.state == GameState.DANGER:
             self.ship.blitme() # Draw the ship in both playing and danger states

@@ -32,7 +32,7 @@ class AlienEyeSpawn(Sprite):
 
         # Speed
         # self.speed = randint(*self.settings.alien_speed_range)
-        self.speed = randint(5, 10)
+        self.speed = randint(10, 20)
 
         # HP
         self.hit_points = randint(2, 3)

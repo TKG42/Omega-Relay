@@ -1,5 +1,6 @@
 from pygame.sprite import Sprite
 from random import randint
+from alien_bullet import AlienBullet
 import pygame
 
 # NOTE: This enemy has unique behavior. It does not move across the screen.
@@ -40,9 +41,10 @@ class AlienRailgun(Sprite):
         self.has_stopped = False
 
         # HP
-        self.hit_points = 13
+        self.hit_points = 20
 
         # Animation timing
+        self.last_fire_time = pygame.time.get_ticks() # For alien rail gun fire delay
         self.last_update = pygame.time.get_ticks()
         self.frame_rate = 100 # milliseconds per frame
 
@@ -66,9 +68,16 @@ class AlienRailgun(Sprite):
             self.animation_frames = self.firing_frames
             self.frame_index = 0
 
-        # NOTE Implemenet firing logic
-        # This could involve creating bullets or other projectiles
-        # and adding them to a relevant sprite group in the game.
+        now = pygame.time.get_ticks()
+        if self.has_stopped and now - self.last_fire_time > 2000: # 2 second delay
+            self.last_fire_time = now
+            self._fire_bullet(self.rect.topleft) # Fire from the top arm
+            self._fire_bullet(self.rect.bottomleft) # Fire from the bottom arm
+
+    def _fire_bullet(self, position):
+        """Fire a bullet from a specified position."""
+        bullet = AlienBullet(self, position)
+        self.or_game.alien_bullets.add(bullet)
 
     def die(self):
         """Trigger the death animation."""

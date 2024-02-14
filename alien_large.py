@@ -33,7 +33,7 @@ class AlienLarge(Sprite):
         self.speed = randint(3, 9)
 
         # HP
-        self.hit_points = 6
+        self.hit_points = 10
 
         # Animation timing
         self.last_update = pygame.time.get_ticks()

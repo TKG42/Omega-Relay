@@ -9,19 +9,22 @@ class PhaseManager:
         self.aliens_spawned_this_phase = 0
         self.aliens_defeated_in_phase = 0
 
+        # HPUP spawn flag
+        self.hpup_spawned = False
+
         # Define phase characteristics like enemy speed, spawn rates, etc.
         # NOTE: Edit config values when OR is feature complete: NOTE
         self.phase_configs = [
-            {"speed_range": (1, 5), "spawn_rate": 12, "player_speed": 30, "bullet_speed": 30, "alien_types": ["BasicAlien"]}, # Phase 1
-            {"speed_range": (1, 7), "spawn_rate": 12, "player_speed": 30, "bullet_speed": 40, "alien_types": ["BasicAlien"]}, # Phase 2
-            {"speed_range": (3, 10), "spawn_rate": 12, "player_speed": 40, "bullet_speed": 50, "alien_types": ["BasicAlien"]}, # Phase 3
-            {"speed_range": (3, 12), "spawn_rate": 12, "player_speed": 40, "bullet_speed": 50, "enemy_bullet_speed": 30, "alien_types": ["BasicAlien"]}, # Phase 4
-            {"speed_range": (5, 12), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn"]}, # Phase 5
-            {"speed_range": (8, 15), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn"]}, # Phase 6
-            {"speed_range": (10, 18), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn"]}, # Phase 7
-            {"speed_range": (10, 20), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn", "AlienLarge"]}, # Phase 8
-            {"speed_range": (12, 22), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["AlienEyeSpawn", "AlienLarge", "AlienRailgun"]}, # Phase 9
-            {"speed_range": (15, 25), "spawn_rate": 12, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["AlienEyeSpawn", "AlienLarge", "AlienRailgun"]}, # Phase 10
+            {"speed_range": (1, 8), "spawn_rate": 20, "player_speed": 30, "bullet_speed": 30, "alien_types": ["BasicAlien"]}, # Phase 1
+            {"speed_range": (2, 12), "spawn_rate": 20, "player_speed": 30, "bullet_speed": 40, "alien_types": ["BasicAlien"]}, # Phase 2
+            {"speed_range": (5, 15), "spawn_rate": 25, "player_speed": 40, "bullet_speed": 50, "alien_types": ["BasicAlien"]}, # Phase 3
+            {"speed_range": (5, 18), "spawn_rate": 25, "player_speed": 40, "bullet_speed": 50, "enemy_bullet_speed": 30, "alien_types": ["BasicAlien"]}, # Phase 4
+            {"speed_range": (7, 20), "spawn_rate": 35, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn"]}, # Phase 5
+            {"speed_range": (10, 20), "spawn_rate": 35, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn"]}, # Phase 6
+            {"speed_range": (12, 22), "spawn_rate": 35, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn"]}, # Phase 7
+            {"speed_range": (15, 25), "spawn_rate": 40, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["BasicAlien", "AlienEyeSpawn", "AlienLarge"]}, # Phase 8
+            {"speed_range": (17, 27), "spawn_rate": 45, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["AlienEyeSpawn", "AlienLarge", "AlienRailgun"]}, # Phase 9
+            {"speed_range": (20, 30), "spawn_rate": 60, "player_speed": 50, "bullet_speed": 60, "enemy_bullet_speed": 40, "alien_types": ["AlienEyeSpawn", "AlienLarge", "AlienRailgun"]}, # Phase 10
              # ... Add configurations for each phase}
         ]
 
@@ -64,6 +67,7 @@ class PhaseManager:
         """Reset the counters for aliens spawned and defeated in the current phase."""
         self.aliens_spawned_this_phase = 0
         self.game.aliens_defeated_in_phase = 0
+        self.hpup_spawned = False
         # NOTE: debugging
         print(f"Transitioning to Phase {self.current_phase}")
 

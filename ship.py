@@ -1,4 +1,5 @@
 import pygame
+from game_state import GameState
 
 class Ship:
     """A class to manage the ship."""
@@ -53,3 +54,10 @@ class Ship:
         """handles shield activation."""
         if self.or_game.shield_powerup and not self.or_game.shield_powerup.active:
             self.or_game.shield_powerup.activate()
+
+    def take_damage(self):
+        """Handle the ship taking damage."""
+        self.or_game.stats.lives_left -= 1
+        self.or_game.sb.prep_lives()
+        if self.or_game.stats.lives_left <= 0:
+            self.or_game.state = GameState.GAME_OVER

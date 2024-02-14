@@ -33,7 +33,8 @@ class Settings:
 
         # Player HP - decreases to zero when hit by an alien,
         # decrements when alien ships pass player ship
-        self.player_lives = 7   # HACK: for testing. return to 3 when done. 
+        self.player_lives = 3  
+        self.hpup_speed = 5
 
         # Power Shot settings
         self.power_shot_speed = 12
