@@ -565,18 +565,22 @@ class OmegaRelay:
         # NOTE Debugging
         print(f'Aliens spawned this phase: {self.phase_manager.aliens_spawned_this_phase}')
 
+        # Count the number of AlienRailgun instances
+        alien_railgun_count = sum(isinstance(alien, AlienRailgun) for alien in self.aliens)
+
         if self.phase_manager.aliens_spawned_this_phase < self.phase_manager.phase_configs[self.phase_manager.current_phase - 1]["spawn_rate"]:
-            for _ in range(3): # Change the range to add more aliens
-                alien_type = random.choice(alien_types_to_spawn)
-                if alien_type == "BasicAlien":
-                    self._create_alien(Alien)
-                elif alien_type == "AlienEyeSpawn":
-                    self._create_alien(AlienEyeSpawn)
-                elif alien_type == "AlienLarge":
-                    self._create_alien(AlienLarge)
-                elif alien_type == "AlienRailgun":
-                    self._create_alien(AlienRailgun)
-                self.phase_manager.aliens_spawned_this_phase += 1 # Increment the counter
+            if alien_railgun_count < 2: # Check if there are less than 2 AlienRailguns
+                for _ in range(3): # Change the range to add more aliens
+                    alien_type = random.choice(alien_types_to_spawn)
+                    if alien_type == "BasicAlien":
+                        self._create_alien(Alien)
+                    elif alien_type == "AlienEyeSpawn":
+                        self._create_alien(AlienEyeSpawn)
+                    elif alien_type == "AlienLarge":
+                        self._create_alien(AlienLarge)
+                    elif alien_type == "AlienRailgun":
+                        self._create_alien(AlienRailgun)
+                    self.phase_manager.aliens_spawned_this_phase += 1 # Increment the counter
 
     def _create_alien(self, alien_class):
         """Create an alien and place it in the column."""
