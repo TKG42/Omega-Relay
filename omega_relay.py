@@ -409,8 +409,9 @@ class OmegaRelay:
         """Check for collisions between AlienBullets and the player."""
         collisions = pygame.sprite.spritecollide(self.ship, self.alien_bullets, False)
         for bullet in collisions:
-            # Handle chip damage here
-            self.ship.take_damage() 
+            # Immune from railgun damage. lol
+            if not isinstance(bullet.alien, AlienRailgun):
+                self.ship.take_damage()
 
     def _check_bullet_alien_collisions(self):
         """Respond to bullet-alien collisions."""
@@ -533,9 +534,9 @@ class OmegaRelay:
         if self.frame_counter2 == 0:
             self._create_new_column_of_aliens()
 
-        # Handle AlienRalgun firing
+        # # Handle AlienRalgun firing
         for alien in self.aliens.sprites():
-            if isinstance(alien, AlienRailgun) and alien.has_stopped:
+            if isinstance(alien, AlienRailgun) and alien.has_stopped and not alien.bullets:
                 self._fire_alien_bullet(alien)
 
         # Check for collision with HpUp

@@ -10,9 +10,6 @@ class AlienBullet(Sprite):
         self.settings = alien.or_game.settings
 
         # Load different animations based on position
-        print(f'TOP: {alien.top_bullet}')
-        print(f'BOTTOM: {alien.bottom_bullet}')
-        print(f'Bullet position: {position}')
         if position == alien.top_bullet:
             self.animation_frames = self.load_animation_frames('images/alien_railgun_bullet_top/tile', frame_count=6) # Top arm bullet frames
         elif position == alien.bottom_bullet:

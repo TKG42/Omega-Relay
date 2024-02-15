@@ -36,6 +36,7 @@ class AlienRailgun(Sprite):
 
         # Speed
         self.speed = 3
+        self.stop_position = self.settings.screen_width * 0.7
 
         # Flag for checking if alien has stopped moving
         self.has_stopped = False
@@ -53,9 +54,11 @@ class AlienRailgun(Sprite):
         self.is_dying = False
 
         # Bullet
-        self.bullet_offset = 55
-        self.top_bullet = (self.rect.topleft[0], self.rect.topleft[1] + self.bullet_offset)
-        self.bottom_bullet = (self.rect.bottomleft[0], self.rect.bottomleft[1] - self.bullet_offset)
+        self.bullets = pygame.sprite.Group()
+        self.bullet_offset_x = self.stop_position
+        self.bullet_offset_y = 55
+        self.top_bullet = (self.rect.topleft[0] - self.bullet_offset_x, self.rect.topleft[1] + self.bullet_offset_y)
+        self.bottom_bullet = (self.rect.bottomleft[0] - self.bullet_offset_x, self.rect.bottomleft[1] - self.bullet_offset_y)
 
     def load_animation_frames(self, base_path, frame_count):
         """Load frames for the animation."""
@@ -82,6 +85,7 @@ class AlienRailgun(Sprite):
     def _fire_bullet(self, position):
         """Fire a bullet from a specified position."""
         bullet = AlienBullet(self, position)
+        self.bullets.add(bullet)
         self.or_game.alien_bullets.add(bullet)
 
     def die(self):
@@ -101,7 +105,7 @@ class AlienRailgun(Sprite):
             self.rect.x = self.x
 
             # Stop moving and start firing
-            if self.rect.x <= self.settings.screen_width * 0.7:  # change as needed
+            if self.rect.x <= self.stop_position:  # change as needed
                 self.has_stopped = True
                 self.fire()
 
