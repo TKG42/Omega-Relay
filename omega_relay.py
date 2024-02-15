@@ -23,7 +23,7 @@ from hpup import HpUp
 
 # NOTE: Omega Relay version 2.7 main
 # FIXME: ALienRailGun bullet spamming needs to be fixed. Enemy should fire shots in 2 second intervals. Needs to sync with firing animation.
-# FIXME: AlienRailGun bullet positions need alignment with Railgun arms
+# FIXME: (Fixed) AlienRailGun bullet positions need alignment with Railgun arms
 # FIXME: Ship collision with AlienRailgun bullet causes instant death. Chip damage is not working correctly
 # FIXME: AlienRailGun lighting projectiles sizes should be scaled down by around 20%
 # FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
@@ -270,6 +270,10 @@ class OmegaRelay:
             self._fire_bullet()
         elif event.key == pygame.K_n and self.state == GameState.PLAYING:   # NOTE: Switches to next phase with 'n'. Remove when done testing
             self.phase_manager.next_phase()
+        elif event.key == pygame.K_m and self.state == GameState.PLAYING:   # NOTE: Switches to next phase with 'n'. Remove when done testing
+            for i in range(10):
+                self.phase_manager.next_phase()
+            self.ship.activate_shield()
         elif event.key == pygame.K_s:
             self.ship.activate_shield()
         elif event.key == pygame.K_f and self.phase_manager.current_phase >= 5:
@@ -287,6 +291,7 @@ class OmegaRelay:
         self.stats.reset_stats() # Reset all HUD stats
         self.ship = Ship(self) # Reinitialize ship
         self.bullets.empty() # Clear existing bullets
+        self.alien_bullets.empty() # Clear alien bullets
         self.aliens.empty() # Clear existing aliens
         self.explosions.empty() # Clear existing explosions
         self.aliens_defeated_in_phase = 0 # Reset defeated alien count
@@ -340,17 +345,7 @@ class OmegaRelay:
 
     def _fire_alien_bullet(self, alien):
         """Fire a bullet from a Rail gun enemy."""
-        # Determine the positions for firing bullets
-        top_arm_position = alien.rect.topleft 
-        bottom_arm_position = alien.rect.bottomleft 
-
-        # Create bullets for each arm
-        top_bullet = AlienBullet(alien, top_arm_position)
-        bottom_bullet = AlienBullet(alien, bottom_arm_position)
- 
-        # Add the bullets to the alien_bullets group
-        self.alien_bullets.add(top_bullet)
-        self.alien_bullets.add(bottom_bullet)
+        alien.fire()
 
     def _fire_power_shot(self):
         """Create a new splash damage power shot and add to power shots group."""

@@ -10,9 +10,12 @@ class AlienBullet(Sprite):
         self.settings = alien.or_game.settings
 
         # Load different animations based on position
-        if position == alien.rect.topleft:
+        print(f'TOP: {alien.top_bullet}')
+        print(f'BOTTOM: {alien.bottom_bullet}')
+        print(f'Bullet position: {position}')
+        if position == alien.top_bullet:
             self.animation_frames = self.load_animation_frames('images/alien_railgun_bullet_top/tile', frame_count=6) # Top arm bullet frames
-        elif position == alien.rect.bottomleft:
+        elif position == alien.bottom_bullet:
             self.animation_frames = self.load_animation_frames('images/alien_railgun_bullet_bottom/tile', frame_count=6) # Bottom arm bullet frames
        
         self.frame_index = 0
@@ -26,7 +29,7 @@ class AlienBullet(Sprite):
         self.frame_rate = 100 # Adjust this value as needed for the animation speed. 
 
         self.x = float(self.rect.x)
-        self.y = float(self.rect.y)    
+        self.y = float(self.rect.y)
 
     def load_animation_frames(self, base_path, frame_count):
         """Load frames for the animation."""

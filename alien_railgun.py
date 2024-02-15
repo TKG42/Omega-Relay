@@ -52,6 +52,11 @@ class AlienRailgun(Sprite):
         self.alive = True
         self.is_dying = False
 
+        # Bullet
+        self.bullet_offset = 55
+        self.top_bullet = (self.rect.topleft[0], self.rect.topleft[1] + self.bullet_offset)
+        self.bottom_bullet = (self.rect.bottomleft[0], self.rect.bottomleft[1] - self.bullet_offset)
+
     def load_animation_frames(self, base_path, frame_count):
         """Load frames for the animation."""
         frames = []
@@ -71,8 +76,8 @@ class AlienRailgun(Sprite):
         now = pygame.time.get_ticks()
         if self.has_stopped and now - self.last_fire_time > 2000: # 2 second delay
             self.last_fire_time = now
-            self._fire_bullet(self.rect.topleft) # Fire from the top arm
-            self._fire_bullet(self.rect.bottomleft) # Fire from the bottom arm
+            self._fire_bullet(self.top_bullet) # Fire from the top arm
+            self._fire_bullet(self.bottom_bullet) # Fire from the bottom arm
 
     def _fire_bullet(self, position):
         """Fire a bullet from a specified position."""
