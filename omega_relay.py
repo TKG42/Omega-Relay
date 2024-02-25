@@ -22,7 +22,8 @@ from alien_bullet import AlienBullet
 from hpup import HpUp
 
 # NOTE: Omega Relay version 2.7 main
-# FIXME: ALienRailGun bullet spamming needs to be fixed. Enemy should fire shots in 2 second intervals. Needs to sync with firing animation.
+# FIXME: ALienRailGun phase spawn limit (2) is preventing other aliens from spawning while two ARG's are on screen.
+# FIXME: ALienRailGun bullet needs to sync with animation and not have a large visual gap between the weapon barrels and the projectile. 
 # FIXME: Ship collision with AlienRailgun bullet causes instant death. Chip damage is not working correctly
 # FIXME: Shield cooldown does not seem to be applied sometimes (more focused testing needed)
 # NOTE: Using spacebar with 'F' and 'S' does not physically feel good for gameplay. May want to change to a more unified key binding. 
