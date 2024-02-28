@@ -20,8 +20,10 @@ from powerupshield import ShieldPowerup
 from powershot import PowerShot
 from alien_bullet import AlienBullet
 from hpup import HpUp
+from boss import Boss
 
-# NOTE: Omega Relay version 2.7 main
+# NOTE: Omega Relay version 2.8 main
+# TODO: Check line 94 NOTE tag in phase_manager.py
 # FIXME: ALienRailGun phase spawn limit (2) is preventing other aliens from spawning while two ARG's are on screen.
 # FIXME: ALienRailGun bullet needs to sync with animation and not have a large visual gap between the weapon barrels and the projectile. 
 # FIXME: Ship collision with AlienRailgun bullet causes instant death. Chip damage is not working correctly
@@ -61,6 +63,9 @@ class OmegaRelay:
         # Add an alien every x frames
         self.alien_add_interval = 100
         self.frame_counter2 = 0
+
+        # Boss instance
+        self.boss = Boss(self)
 
         self.bullets = pygame.sprite.Group()
         self.alien_bullets = pygame.sprite.Group()
@@ -125,6 +130,10 @@ class OmegaRelay:
         # Reset transition flag once transition is complete
         elif self.state != GameState.PHASE_CHANGE:
             self.background_transition.started = False
+
+        if self.current_phase == self.settings.boss_fight_phase:
+            self.boss.update()
+            self._check_bullet_boss_collisions()
 
         # Handle transitions
         if self.next_state:
@@ -411,6 +420,12 @@ class OmegaRelay:
             # Immune from railgun damage. lol
             if not isinstance(bullet.alien, AlienRailgun):
                 self.ship.take_damage()
+
+    def _check_bullet_boss_collisions(self):
+        """Check for bullets hitting the boss and reduce health"""
+        collisions = pygame.sprite.groupcollide(self.bullets, self.boss, True, False)
+        for collision in collisions:
+            self.boss.take_damage(2)  # Edit as necessary
 
     def _check_bullet_alien_collisions(self):
         """Respond to bullet-alien collisions."""

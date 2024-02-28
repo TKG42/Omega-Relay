@@ -55,3 +55,10 @@ class Settings:
 
         # Alien settings
         self.alien_speed_range = (1, 10) # Default speed. See Phase config for expected speeds per level. 
+
+        # Boss specific settings
+        self.boss_health = 300
+        self.phase_2_threshold = 200
+        self.phase_3_threshold = 100
+        self.boss_fight_phase = 5.5 # Phase between 5 and 6
+        self.boss_background_image = 'images/image.png'

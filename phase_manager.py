@@ -1,4 +1,5 @@
 from game_state import GameState
+import pygame
 
 class PhaseManager:
     def __init__(self, or_game):
@@ -89,12 +90,39 @@ class PhaseManager:
         # Apply additional phase-sepcific changes as needed
         if "enemy_bullet_speed" in config:
             self.game.settings.enemy_bullet_speed = config["enemy_bullet_speed"]
+
+    # NOTE: Check existing code for similar methods to the ones below before adding code. 
+    def _condition_for_boss_fight(self):
+        # Define the condition to trigger the boss fight
+        return True  # Replace with actual condition
+
+    def _apply_crossfade_transition(self):
+        # Implement the crossfade transition logic here
+        pass
         
     def update(self):
         """Update phase-related conditions and check for phase completion."""
         if self.should_change_phase():
             self.next_phase()
-
+            
             # NOTE: debugging
             print("Updating PhaseManager...")
             print(f"Spawned: {self.aliens_spawned_this_phase}, Defeated: {self.game.aliens_defeated_in_phase}")
+
+        # Transition to boss fight phase
+        if self.game.current_phase == 5 and self._condition_for_boss_fight(): # NOTE: 'condition for boss fight' is a placeholder. I've got a method around here somewhere...
+            self.game.current_phase = self.game.settings.boss_fight_phase
+            self.game.background = pygame.image.load(self.game.settings.boss_background_image)
+            self._apply_crossfade_transition() 
+
+        # Update the phase of the boss based on game conditions
+        if self.game.boss.health <= self.game.settings.phase_2_threshold:
+            self.game.boss.current_phase = 2
+        elif self.game.boss.health <= self.game.settings.phase_3_threshold:
+            self.game.boss.current_phase = 3
+
+        # Transition from boss fight to phase 6
+        if self.game.current_phase == self.game.settings.boss_fight_phase and self.game.boss.is_defeated():
+            self.game.current_phase = 6
+            self._apply_crossfade_transition() # XXX hmmm might delete later
+
