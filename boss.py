@@ -24,12 +24,12 @@ class Boss(Sprite):
         self.target_position = self.game.screen_width // 2
 
         # Load animation frames
-        self.idle_frames = self.load_animation_frames('images/boss/tile', frame_count=29) 
-        self.death_frames = self.load_animation_frames('images/boss/tile', frame_count=14) 
-        self.forward_attack_frames = self.load_animation_frames('images/boss/tile', frame_count=25)
-        self.swept_attack_frames = self.load_animation_frames('images/boss/tile', frame_count=25)
-        self.hurt_frames = self.load_animation_frames('images/boss/tile', frame_count=25)
-        self.jump_frames = self.load_animation_frames('images/boss/tile', frame_count=25)
+        self.idle_frames = self.load_animation_frames('images/LB_idle_frames/tile', frame_count=48) 
+        self.death_frames = self.load_animation_frames('images/LB_death_frames/tile', frame_count=24) 
+        self.forward_attack_frames = self.load_animation_frames('images/LB_attack_forward/tile', frame_count=60)
+        self.swept_attack_frames = self.load_animation_frames('images/LB_super_attack_frames/tile', frame_count=121)
+        self.hurt_frames = self.load_animation_frames('images/LB_hurt_frames/tile', frame_count=7)
+        self.jump_frames = self.load_animation_frames('images/LB_jump_frames/tile', frame_count=24)
 
         # Set the initial animation state
         self.animation_frames = self.idle_frames
@@ -118,14 +118,14 @@ class Boss(Sprite):
 
     def fire_projectile(self):
         """Logic to fire a projectile at the player"""
-        projectile_image_path = 'images/image.png'
+        projectile_image_path = 'images/LB_projectile.png'
         projectile = Projectile(self.rect.center, self.game.player.rect.center, projectile_image_path)
         self.game.alien_bullets.add(projectile)
 
     def fire_off_screen_projectile(self):
         """Logic to randomly fire projectiles from off-screen"""
         # Fire from random off-screen positions
-        projectile_image_path = 'images/image.png'
+        projectile_image_path = 'images/LB_projectile.png'
         x_positions = [random.randint(-100, -10), random.randint(self.game.screen_width + 10, self.game.screen_width + 100)]
         y_position = random.randint(0, self.game.screen_height)
         random_position = (random.choice(x_positions), y_position)
