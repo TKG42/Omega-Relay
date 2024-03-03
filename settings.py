@@ -20,6 +20,7 @@ class Settings:
             'phase_8': pygame.image.load('images/backgrounds/PurpleNebula3_xl.png'),
             'phase_9': pygame.image.load('images/backgrounds/PurpleNebula5_xl.png'),
             'phase_10': pygame.image.load('images/backgrounds/PurpleNebula4_xl.png'),
+            'boss': pygame.image.load('images/backgrounds/Starfield1_xl.png')
         }
     
         self.screen_width = self.background.get_width()
@@ -61,4 +62,3 @@ class Settings:
         self.phase_2_threshold = 200
         self.phase_3_threshold = 100
         self.boss_fight_phase = 5.5 # Phase between 5 and 6
-        self.boss_background_image = 'images/image.png'

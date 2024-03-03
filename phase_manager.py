@@ -42,8 +42,13 @@ class PhaseManager:
         self.game.bullets.empty()
         self.game.alien_bullets.empty()
 
-        if self.current_phase < self.total_phases:
-
+        if self.current_phase == 5 and self._condition_for_boss_fight(): # NOTE: 'condition for boss fight' is a placeholder. I've got a method around here somewhere...
+            self.current_phase = self.game.settings.boss_fight_phase
+            self.game.settings.background = self.game.settings.backgrounds['boss']
+            self._apply_crossfade_transition()
+        elif self.current_phase < self.total_phases:
+            if self.current_phase == self.game.settings.boss_fight_phase: #and self.game.boss.is_defeated():
+                self.current_phase = 5
             # Set the background before updating to the new phase level
             self.game.background_transition.alpha = 0 # Reset alpha
             self.game.background_transition.current_bg = self.game.settings.backgrounds['phase_' + str(self.current_phase)]
@@ -74,6 +79,8 @@ class PhaseManager:
 
     def should_change_phase(self):
         """Determine if a phase change should occur."""
+        if self.current_phase == self.game.settings.boss_fight_phase:
+            return(self._condition_for_boss_fight())
         current_config = self.phase_configs[self.current_phase - 1]
         return (self.aliens_spawned_this_phase >= current_config["spawn_rate"] and
                 self.game.aliens_defeated_in_phase >= self.aliens_spawned_this_phase)
@@ -108,21 +115,4 @@ class PhaseManager:
             # NOTE: debugging
             print("Updating PhaseManager...")
             print(f"Spawned: {self.aliens_spawned_this_phase}, Defeated: {self.game.aliens_defeated_in_phase}")
-
-        # Transition to boss fight phase
-        if self.current_phase == 5 and self._condition_for_boss_fight(): # NOTE: 'condition for boss fight' is a placeholder. I've got a method around here somewhere...
-            self.current_phase = self.game.settings.boss_fight_phase
-            self.game.background = pygame.image.load(self.game.settings.boss_background_image)
-            self._apply_crossfade_transition() 
-
-        # Update the phase of the boss based on game conditions
-        if self.game.boss.health <= self.game.settings.phase_2_threshold:
-            self.game.boss.current_phase = 2
-        elif self.game.boss.health <= self.game.settings.phase_3_threshold:
-            self.game.boss.current_phase = 3
-
-        # Transition from boss fight to phase 6
-        if self.current_phase == self.game.settings.boss_fight_phase and self.game.boss.is_defeated():
-            self.current_phase = 6
-            self._apply_crossfade_transition() # XXX hmmm might delete later
 

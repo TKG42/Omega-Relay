@@ -25,6 +25,7 @@ from boss import Boss
 # NOTE: Omega Relay version 2.8 main
 # TODO: It may be a good idea to create a new state, specific to the boss fight. 
 # TODO: Check line 94 NOTE tag in phase_manager.py
+# FIXME: Boss phase immediately ends. We need a condition to be in the boss fight.
 # FIXME: ALienRailGun phase spawn limit (2) is preventing other aliens from spawning while two ARG's are on screen.
 # FIXME: ALienRailGun bullet needs to sync with animation and not have a large visual gap between the weapon barrels and the projectile. 
 # FIXME: Ship collision with AlienRailgun bullet causes instant death. Chip damage is not working correctly
@@ -106,13 +107,13 @@ class OmegaRelay:
 
     def _update_game_state(self):
         """Centralized game state management."""
-        # ISABEL: Stay in main menu state if already in main menu
+        # Stay in main menu state if already in main menu
         if self.state == GameState.MAIN_MENU:
             self.next_state = GameState.MAIN_MENU
-        # ISABEL: only switch to PHASE_CHANGE state if we are not already in that state
+        # Only switch to PHASE_CHANGE state if we are not already in that state
         elif self.state != GameState.PHASE_CHANGE and self.phase_manager.should_change_phase():
             self.next_state = GameState.PHASE_CHANGE
-            # ISABEL: Once you start the phase change, go to the next phase
+            # Once you start the phase change, go to the next phase
             self.phase_manager.update()
         elif self.state == GameState.PLAYING and self._is_in_danger():
             # If a phase change is pending, don't switch to danger
@@ -121,10 +122,12 @@ class OmegaRelay:
         # Check if danger should persist or revert to playing state
         elif self.state == GameState.DANGER and not self._is_in_danger():
             self.next_state = GameState.PLAYING
-        elif self.state not in [GameState.PHASE_CHANGE, GameState.DANGER, GameState.GAME_OVER]:
+        elif self.state not in [GameState.PHASE_CHANGE, GameState.DANGER, GameState.GAME_OVER, GameState.BOSS_FIGHT]:
             self.next_state = GameState.PLAYING
         
         # TODO: need state conditional for boss fight here
+        elif self.phase_manager.current_phase == self.settings.boss_fight_phase and self.phase_manager._condition_for_boss_fight():
+            self.next_state = GameState.BOSS_FIGHT
 
         # Handle background transition on phase change
         elif self.state == GameState.PHASE_CHANGE and not self.background_transition.started:
@@ -151,6 +154,8 @@ class OmegaRelay:
             self.main_menu_state()
         elif self.state == GameState.GAME_OVER:
             self.game_over_state()
+        elif self.state == GameState.BOSS_FIGHT:
+            self.boss_fight()
 
     def playing_state(self): 
         """Handle all playing logic, updating the ship, stars, bullets, etc."""
@@ -264,6 +269,15 @@ class OmegaRelay:
                     self.state = GameState.MAIN_MENU
                     self._execute_current_state()
                     return # Skip further processing
+
+    def boss_fight(self):
+        if not self.danger_start_time:
+            self.danger_start_time = pygame.time.get_ticks()
+        self.danger_state()
+        if not self.aliens:
+            boss = self._create_alien(Boss)
+            boss.boss_entrance()
+        self.playing_state()
 
     def _check_keydown_events(self, event):
         """Respond to keypresses."""
@@ -601,6 +615,7 @@ class OmegaRelay:
         """Create an alien and place it in the column."""
         alien = alien_class(self)
         self.aliens.add(alien)
+        return alien
 
     def _flash_danger_message(self):
         font = pygame.font.SysFont(None, 64)
@@ -618,8 +633,12 @@ class OmegaRelay:
 
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen."""
-        # Ternary operator
-        background_key = 'main_menu' if self.state == GameState.MAIN_MENU else f'phase_{self.phase_manager.current_phase}'
+        if self.phase_manager.current_phase == self.settings.boss_fight_phase:
+            background_key = 'boss'
+        elif self.state == GameState.MAIN_MENU:
+            background_key = 'main_menu'
+        else:
+            background_key = f'phase_{self.phase_manager.current_phase}'
         self.settings.background = self.settings.backgrounds.get(background_key, 'main_menu')
         self.screen.blit(self.settings.background, (0, 0))
         self.stars.draw(self.screen)

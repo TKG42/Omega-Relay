@@ -15,6 +15,7 @@ class Boss(Sprite):
         self.off_screen = False
         self.super_attack_performed = False
         self.entrance_complete = False
+        self.is_dying = False
 
         # Attributes for movement and attack logic
         self.vertical_speed = 3
@@ -35,6 +36,7 @@ class Boss(Sprite):
         self.animation_frames = self.idle_frames
         self.frame_index = 0
         self.image = self.animation_frames[self.frame_index]
+        self.rect = self.image.get_rect()
 
     def load_animation_frames(self, base_path, frame_count):
         """Load frames for the animation."""
@@ -114,23 +116,24 @@ class Boss(Sprite):
         """Handle boss taking damage"""
         self.health -= damage
         if self.health <= 0:
+            self.is_dying = True
             self.kill()
 
     def fire_projectile(self):
         """Logic to fire a projectile at the player"""
-        projectile_image_path = 'images/LB_projectile.png'
-        projectile = Projectile(self.rect.center, self.game.player.rect.center, projectile_image_path)
+        projectile_image_path = 'images/Gold_blast15x3.png'
+        projectile = Projectile(self.game, self.rect.center, self.game.ship.rect.center, projectile_image_path)
         self.game.alien_bullets.add(projectile)
 
     def fire_off_screen_projectile(self):
         """Logic to randomly fire projectiles from off-screen"""
         # Fire from random off-screen positions
-        projectile_image_path = 'images/LB_projectile.png'
+        projectile_image_path = 'images/Gold_blast15x3.png'
         x_positions = [random.randint(-100, -10), random.randint(self.game.screen_width + 10, self.game.screen_width + 100)]
         y_position = random.randint(0, self.game.screen_height)
         random_position = (random.choice(x_positions), y_position)
 
-        projectile = Projectile(random_position, self.game.player.rect.center, projectile_image_path)
+        projectile = Projectile(self.game, random_position, self.game.ship.rect.center, projectile_image_path)
         self.game.alien_bullets.add(projectile)
 
     def super_attack(self):
@@ -160,8 +163,9 @@ class Boss(Sprite):
 
 class Projectile(pygame.sprite.Sprite):
     """Boss fight laser projectile"""
-    def __init__(self, position, target, image_path):
+    def __init__(self, game, position, target, image_path):
         super().__init__()
+        self.game = game
         self.image = pygame.image.load(image_path).convert_alpha()
         self.rect = self.image.get_rect(center=position)
         self.target = target
@@ -176,8 +180,8 @@ class Projectile(pygame.sprite.Sprite):
         self.rect.centery += dir_vector.y * self.speed
         
         # Check if the projectile is off-screen
-        if (self.rect.x < 0 or self.rect.x > self.game.screen_width or
-            self.rect.y < 0 or self.rect.y > self.game.screen_height):
+        if (self.rect.x < 0 or self.rect.x > self.game.settings.screen_width or
+            self.rect.y < 0 or self.rect.y > self.game.settings.screen_height):
             self.kill()
 
     
