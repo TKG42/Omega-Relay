@@ -5,3 +5,5 @@ class GameState:
     DANGER = "danger"
     PHASE_CHANGE = "phase_change"
     GAME_OVER = "game_over"
+    BOSS_FIGHT = 'boss_fight'
+    FINAL_BOSS= 'final_boss'

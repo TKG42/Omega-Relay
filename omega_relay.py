@@ -23,6 +23,7 @@ from hpup import HpUp
 from boss import Boss
 
 # NOTE: Omega Relay version 2.8 main
+# TODO: It may be a good idea to create a new state, specific to the boss fight. 
 # TODO: Check line 94 NOTE tag in phase_manager.py
 # FIXME: ALienRailGun phase spawn limit (2) is preventing other aliens from spawning while two ARG's are on screen.
 # FIXME: ALienRailGun bullet needs to sync with animation and not have a large visual gap between the weapon barrels and the projectile. 
@@ -122,6 +123,8 @@ class OmegaRelay:
             self.next_state = GameState.PLAYING
         elif self.state not in [GameState.PHASE_CHANGE, GameState.DANGER, GameState.GAME_OVER]:
             self.next_state = GameState.PLAYING
+        
+        # TODO: need state conditional for boss fight here
 
         # Handle background transition on phase change
         elif self.state == GameState.PHASE_CHANGE and not self.background_transition.started:
@@ -130,10 +133,6 @@ class OmegaRelay:
         # Reset transition flag once transition is complete
         elif self.state != GameState.PHASE_CHANGE:
             self.background_transition.started = False
-
-        if self.current_phase == self.settings.boss_fight_phase:
-            self.boss.update()
-            self._check_bullet_boss_collisions()
 
         # Handle transitions
         if self.next_state:

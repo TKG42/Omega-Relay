@@ -20,8 +20,8 @@ class Boss(Sprite):
         self.vertical_speed = 3
         self.off_screen_speed = 5
         self.top_limit = 100
-        self.bottom_limit = self.game.screen_height - 100
-        self.target_position = self.game.screen_width // 2
+        self.bottom_limit = self.game.settings.screen_height - 100
+        self.target_position = self.game.settings.screen_width // 2
 
         # Load animation frames
         self.idle_frames = self.load_animation_frames('images/LB_idle_frames/tile', frame_count=48) 
