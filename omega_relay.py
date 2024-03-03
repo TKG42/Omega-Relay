@@ -171,10 +171,11 @@ class OmegaRelay:
         """ Display the danger message and return to playing state after a brief period."""
         current_time = pygame.time.get_ticks()
         if current_time - self.danger_start_time > 2000:  # 2 seconds passed
-            if self.phase_manager.should_change_phase():
-                self.next_state = GameState.PHASE_CHANGE
-            else:
-                self.next_state = GameState.PLAYING
+            if not self.state == GameState.BOSS_FIGHT:
+                if self.phase_manager.should_change_phase():
+                    self.next_state = GameState.PHASE_CHANGE
+                else:
+                    self.next_state = GameState.PLAYING
         # Continue updating the game elements while in danger state
         self.ship.blitme() # Make sure the ship is drawn
         self.playing_state()
@@ -276,7 +277,6 @@ class OmegaRelay:
         self.danger_state()
         if not self.aliens:
             boss = self._create_alien(Boss)
-            boss.boss_entrance()
         self.playing_state()
 
     def _check_keydown_events(self, event):

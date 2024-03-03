@@ -37,6 +37,8 @@ class Boss(Sprite):
         self.frame_index = 0
         self.image = self.animation_frames[self.frame_index]
         self.rect = self.image.get_rect()
+        self.rect.x = or_game.settings.screen_width
+        self.rect.y = random.randint(self.top_limit, or_game.settings.screen_height - self.rect.height)
 
     def load_animation_frames(self, base_path, frame_count):
         """Load frames for the animation."""
@@ -116,8 +118,11 @@ class Boss(Sprite):
         """Handle boss taking damage"""
         self.health -= damage
         if self.health <= 0:
-            self.is_dying = True
-            self.kill()
+            self.die()
+
+    def die(self):
+        self.is_dying = True
+        self.kill()
 
     def fire_projectile(self):
         """Logic to fire a projectile at the player"""
