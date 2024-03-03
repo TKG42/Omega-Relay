@@ -110,8 +110,8 @@ class PhaseManager:
             print(f"Spawned: {self.aliens_spawned_this_phase}, Defeated: {self.game.aliens_defeated_in_phase}")
 
         # Transition to boss fight phase
-        if self.game.current_phase == 5 and self._condition_for_boss_fight(): # NOTE: 'condition for boss fight' is a placeholder. I've got a method around here somewhere...
-            self.game.current_phase = self.game.settings.boss_fight_phase
+        if self.current_phase == 5 and self._condition_for_boss_fight(): # NOTE: 'condition for boss fight' is a placeholder. I've got a method around here somewhere...
+            self.current_phase = self.game.settings.boss_fight_phase
             self.game.background = pygame.image.load(self.game.settings.boss_background_image)
             self._apply_crossfade_transition() 
 
@@ -122,7 +122,7 @@ class PhaseManager:
             self.game.boss.current_phase = 3
 
         # Transition from boss fight to phase 6
-        if self.game.current_phase == self.game.settings.boss_fight_phase and self.game.boss.is_defeated():
-            self.game.current_phase = 6
+        if self.current_phase == self.game.settings.boss_fight_phase and self.game.boss.is_defeated():
+            self.current_phase = 6
             self._apply_crossfade_transition() # XXX hmmm might delete later
 
