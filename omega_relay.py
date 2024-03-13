@@ -190,7 +190,7 @@ class OmegaRelay:
             if alien.rect.right < self.settings.screen_width * 0.02:
                 self.aliens_defeated_in_phase += 1
                 # NOTE debugging
-                print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
+                # print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
                 return True
             return False
         
@@ -454,7 +454,7 @@ class OmegaRelay:
                 if alien.hit_points <= 0 and alien.alive:
                     self._alien_death(alien)
                     # NOTE debugging
-                    print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
+                    # print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
   
         # Hard alien collisions
         for bullet in collisions:
@@ -526,7 +526,7 @@ class OmegaRelay:
                 self.aliens.remove(alien)
                 self.aliens_defeated_in_phase += 1
                 # NOTE debugging
-                print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
+                # print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
                 self.stats.lives_left -= 1
                 if self.stats.lives_left <= 0:
                     self.state = GameState.GAME_OVER
@@ -542,7 +542,7 @@ class OmegaRelay:
         # Increment the counter for defeated aliens
         self.aliens_defeated_in_phase += 1
         # NOTE debugging
-        print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
+        # print(f"Alien defeated! Total now: {self.aliens_defeated_in_phase}")
         # Go to the next phase if plater has defeated all the aliens
         if self.state == GameState.PLAYING and self.aliens_defeated_in_phase >= self.phase_manager.phase_configs[self.phase_manager.current_phase - 1]["spawn_rate"]:
             self.phase_manager.update()
@@ -592,7 +592,7 @@ class OmegaRelay:
         alien_types_to_spawn = current_phase_config.get("alien_types", ["BasicAlien"])
     
         # NOTE Debugging
-        print(f'Aliens spawned this phase: {self.phase_manager.aliens_spawned_this_phase}')
+        # rint(f'Aliens spawned this phase: {self.phase_manager.aliens_spawned_this_phase}')
 
         # Count the number of AlienRailgun instances
         alien_railgun_count = sum(isinstance(alien, AlienRailgun) for alien in self.aliens)
