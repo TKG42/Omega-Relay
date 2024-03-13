@@ -42,7 +42,7 @@ class PhaseManager:
         self.game.bullets.empty()
         self.game.alien_bullets.empty()
 
-        if self.current_phase == 5 and self._condition_for_boss_fight(): # NOTE: 'condition for boss fight' is a placeholder. I've got a method around here somewhere...
+        if self._condition_for_boss_fight(): # NOTE: 'condition for boss fight' is a placeholder. I've got a method around here somewhere...
             self.current_phase = self.game.settings.boss_fight_phase
             self.game.settings.background = self.game.settings.backgrounds['boss']
             self._apply_crossfade_transition()
@@ -80,7 +80,7 @@ class PhaseManager:
     def should_change_phase(self):
         """Determine if a phase change should occur."""
         if self.current_phase == self.game.settings.boss_fight_phase:
-            return(self._condition_for_boss_fight())
+            return(self.game.aliens_defeated_in_phase >= self.aliens_spawned_this_phase)
         current_config = self.phase_configs[self.current_phase - 1]
         return (self.aliens_spawned_this_phase >= current_config["spawn_rate"] and
                 self.game.aliens_defeated_in_phase >= self.aliens_spawned_this_phase)
@@ -101,7 +101,7 @@ class PhaseManager:
     # NOTE: Check existing code for similar methods to the ones below before adding code. 
     def _condition_for_boss_fight(self):
         # Define the condition to trigger the boss fight
-        return True  # Replace with actual condition
+        return (self.current_phase == 5 and self.game.aliens_defeated_in_phase >= self.aliens_spawned_this_phase) # Replace with actual condition
 
     def _apply_crossfade_transition(self):
         # Implement the crossfade transition logic here

@@ -110,6 +110,10 @@ class OmegaRelay:
         # Stay in main menu state if already in main menu
         if self.state == GameState.MAIN_MENU:
             self.next_state = GameState.MAIN_MENU
+
+        # Stay in boss phase if we're in a boss fight
+        elif self.phase_manager.current_phase == self.settings.boss_fight_phase:
+            self.next_state = GameState.BOSS_FIGHT
         # Only switch to PHASE_CHANGE state if we are not already in that state
         elif self.state != GameState.PHASE_CHANGE and self.phase_manager.should_change_phase():
             self.next_state = GameState.PHASE_CHANGE
@@ -122,12 +126,9 @@ class OmegaRelay:
         # Check if danger should persist or revert to playing state
         elif self.state == GameState.DANGER and not self._is_in_danger():
             self.next_state = GameState.PLAYING
+
         elif self.state not in [GameState.PHASE_CHANGE, GameState.DANGER, GameState.GAME_OVER, GameState.BOSS_FIGHT]:
             self.next_state = GameState.PLAYING
-        
-        # TODO: need state conditional for boss fight here
-        elif self.phase_manager.current_phase == self.settings.boss_fight_phase and self.phase_manager._condition_for_boss_fight():
-            self.next_state = GameState.BOSS_FIGHT
 
         # Handle background transition on phase change
         elif self.state == GameState.PHASE_CHANGE and not self.background_transition.started:
@@ -139,6 +140,7 @@ class OmegaRelay:
 
         # Handle transitions
         if self.next_state:
+            print(f'Next state: {self.next_state}')
             self.state = self.next_state
             self.next_state = None
 
@@ -169,6 +171,7 @@ class OmegaRelay:
 
     def danger_state(self):
         """ Display the danger message and return to playing state after a brief period."""
+
         current_time = pygame.time.get_ticks()
         if current_time - self.danger_start_time > 2000:  # 2 seconds passed
             if not self.state == GameState.BOSS_FIGHT:
@@ -182,7 +185,6 @@ class OmegaRelay:
 
     def _is_in_danger(self):
         """Determine if the game is in the danger state."""
-        # ISABEL: Stay in danger state for at least 2 seconds ago
         if self.state == GameState.DANGER and pygame.time.get_ticks() - self.danger_start_time < 2000:
             return True
         # similar to _check_alien_leftscreen
@@ -430,9 +432,7 @@ class OmegaRelay:
         """Check for collisions between AlienBullets and the player."""
         collisions = pygame.sprite.spritecollide(self.ship, self.alien_bullets, False)
         for bullet in collisions:
-            # Immune from railgun damage. lol
-            if not isinstance(bullet.alien, AlienRailgun):
-                self.ship.take_damage()
+            self.ship.take_damage()
 
     def _check_bullet_boss_collisions(self):
         """Check for bullets hitting the boss and reduce health"""
@@ -557,9 +557,10 @@ class OmegaRelay:
                 self.aliens.remove(alien)
 
         # Add new aliens with a random y position from the right side screen
-        self.frame_counter2 = (self.frame_counter2 + 1) % self.alien_add_interval
-        if self.frame_counter2 == 0:
-            self._create_new_column_of_aliens()
+        if self.state != GameState.BOSS_FIGHT:
+            self.frame_counter2 = (self.frame_counter2 + 1) % self.alien_add_interval
+            if self.frame_counter2 == 0:
+                self._create_new_column_of_aliens()
 
         # # Handle AlienRalgun firing
         for alien in self.aliens.sprites():
